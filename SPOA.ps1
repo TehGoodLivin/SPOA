@@ -113,8 +113,10 @@ function showSiteTools {
     
 ###########################################################
 #                                                         #
-# 1: PRESS '1' FOR SITE MAP.                              #
-# 2: PRESS '2' FOR PII SCAN.                              #
+# 1: PRESS '1' FOR SITE MAP REPORT.                       #
+# 2: PRESS '2' FOR PII SCAN REPORT.                       #
+# 3: PRESS '3' FOR SITE COLLECTION ADMIN REPORT.          #
+# 4: PRESS '4' FOR SITE COLLECTION GROUP REPORT.          #
 # Q: PRESS 'E' TO EXIT BACK TO THE MAIN MENU.             #
 #                                                         #
 ###########################################################`n"
@@ -331,6 +333,39 @@ function spoScanPII {
     Write-Host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; Write-Host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
     Write-Host "Report Saved: " -ForegroundColor DarkYellow -nonewline; Write-Host "$($reportPath)\$($reportName)" -ForegroundColor White;
 }
+
+# OPTION "3"
+function spoGetSiteCollectionAdmins {
+    param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportPath,
+          [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
+
+    Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
+
+    $sitePath = Read-Host "ENTER SITE COLLECTION URL"
+
+    Get-PnPSiteCollectionAdmin | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation
+
+    Disconnect-PnPOnline
+
+    Write-Host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; Write-Host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
+    Write-Host "Report Saved: " -ForegroundColor DarkYellow -nonewline; Write-Host "$($reportPath)\$($reportName)" -ForegroundColor White;
+}
+
+# OPTION "4"
+function spoGetSiteCollectionGroups {
+    param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportPath,
+          [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
+
+    $sitePath = Read-Host "ENTER SITE COLLECTION URL"
+    Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
+ 
+    Get-PnPGroup | Where {$_.IsHiddenInUI -eq $false -and $_.LoginName -notlike "Limited Access*" -and $_.LoginName -notlike "SharingLinks*"} | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation
+
+    Disconnect-PnPOnline
+
+    Write-Host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; Write-Host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
+    Write-Host "Report Saved: " -ForegroundColor DarkYellow -nonewline; Write-Host "$($reportPath)\$($reportName)" -ForegroundColor White;
+}
 #endregion
 
 #region USER TOOLS
@@ -515,6 +550,12 @@ do {
                     }
                     "2" {
                         spoScanPII -reportPath $setupReportPath -reportName "SPOSCANPII_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
+                    }
+                    "3" {
+                        spoGetSiteCollectionAdmins -reportPath $setupReportPath -reportName "SPOSITECOLLECTIONADMINS_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
+                    }
+                    "4" {
+                        spoGetSiteCollectionGroups -reportPath $setupReportPath -reportName "SPOSITECOLLECTIONADMINS_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
                     }
                 }
             } until ($menuSiteTools -eq "e")
