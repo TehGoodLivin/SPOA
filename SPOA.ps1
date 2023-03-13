@@ -8,6 +8,7 @@ Function Format-FileSize() { # https://community.spiceworks.com/topic/1955251-po
     Else {""}
 }
 
+#region SETUP FUNCTIONS
 function showSetup {
     param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$SetupPath,
           [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$ReportPath,
@@ -47,7 +48,9 @@ function showSetup {
         $global:wordDirtySearch = Import-Csv $DirtyWordsFilePath
     }
 }
+#endregion
 
+#region MAIN AND SETTING MENU FUNCTIONS
 function showMenu {
     Write-Host "
 ###########################################################
@@ -99,8 +102,9 @@ function showSettings {
 #                                                         #
 ###########################################################`n"
 }
+#endregion
 
-#region SITE TOOLS
+#region SITE TOOLS FUNCTIONS
 function showSiteTools {   
     Write-Host "
 ###########################################################
@@ -368,7 +372,7 @@ function spoGetSiteCollectionGroups {
 }
 #endregion
 
-#region USER TOOLS
+#region USER TOOLS FUNCTIONS
 function showUserTools {   
     Write-Host "
 ###########################################################
@@ -456,7 +460,7 @@ function spoDeleteUserGroups {
 }
 #endregion
 
-#region LIST TOOLS
+#region LIST TOOLS FUNCTIONS
 function showListTools {   
     Write-Host "
 ###########################################################
@@ -527,6 +531,7 @@ function spoDeleteAllListItems {
 }
 #endregion
 
+#region MAIN
 $setupPath = "C:\users\$env:USERNAME\Documents\SOPA"
 $setupReportPath = $setupPath + "\Reports"
 $setupDirtyWordsPath = $setupPath + "\DirtyWords"
@@ -612,3 +617,4 @@ do {
         #endregion
     }
 } until ($menuMain -eq "q")
+#endregion
