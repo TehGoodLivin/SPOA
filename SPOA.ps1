@@ -1,3 +1,13 @@
+Function Format-FileSize() { # https://community.spiceworks.com/topic/1955251-powershell-help
+    Param ([int]$size)
+    If ($size -gt 1TB) {[string]::Format("{0:0.00} TB", $size / 1TB)}
+    ElseIf ($size -gt 1GB) {[string]::Format("{0:0.00} GB", $size / 1GB)}
+    ElseIf ($size -gt 1MB) {[string]::Format("{0:0.00} MB", $size / 1MB)}
+    ElseIf ($size -gt 1KB) {[string]::Format("{0:0.00} KB", $size / 1KB)}
+    ElseIf ($size -gt 0) {[string]::Format("{0:0.00} B", $size)}
+    Else {""}
+}
+
 function showSetup {
     param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$SetupPath,
           [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$ReportPath,
@@ -38,7 +48,6 @@ function showSetup {
     }
 }
 
-#START PAGE
 function showMenu {
     Write-Host "
 ##################################################
@@ -69,59 +78,13 @@ function showMenu {
 ##################################################
 #                                                #
 # 1: PRESS '1' FOR SITE TOOLS.                   #
-# 3: PRESS '2' FOR USER TOOLS.                   #
-# S: PRESS 'S' FOR SETTINGS.                     #
-# Q: PRESS 'Q' TO QUIT.                          #
+# 2: PRESS '2' FOR USER TOOLS.                   #
+# 3: PRESS '3' FOR LIST TOOLS.                   #
+# PRESS 'S' FOR SETTINGS OR 'Q' TO QUIT          #
 #                                                #
 ##################################################`n"
 }
 
-function showSiteTools {   
-    Write-Host "
-##################################################
-#                                                #
-#                  SITE TOOLS                    #
-#                                                #
-##################################################
-
-##################################################
-#                                                #
-#              PLEASE SELECT A TOOL              #
-#                                                #
-##################################################
-    
-##################################################
-#                                                #
-# 1: PRESS '1' FOR SITE MAP.                     #
-# 2: PRESS '2' FOR PII SCAN.                     #
-# Q: PRESS 'E' TO EXIT BACK TO THE MAIN MENU.    #
-#                                                #
-##################################################`n"
-}
-
-function showUserTools {   
-    Write-Host "
-##################################################
-#                                                #
-#                  USER TOOLS                    #
-#                                                #
-##################################################
-
-##################################################
-#                                                #
-#              PLEASE SELECT A TOOL              #
-#                                                #
-##################################################
-    
-##################################################
-#                                                #
-# 1: PRESS '1' FOR USER GROUP DELETION.          #
-# Q: PRESS 'E' TO EXIT BACK TO THE MAIN MENU.    #
-#                                                #
-##################################################`n"
-}
-
-# OPTION "S"
 function showSettings {   
     Write-Host "
 ##################################################
@@ -145,14 +108,28 @@ function showSettings {
 ##################################################`n"
 }
 
-Function Format-FileSize() { # https://community.spiceworks.com/topic/1955251-powershell-help
-    Param ([int]$size)
-    If ($size -gt 1TB) {[string]::Format("{0:0.00} TB", $size / 1TB)}
-    ElseIf ($size -gt 1GB) {[string]::Format("{0:0.00} GB", $size / 1GB)}
-    ElseIf ($size -gt 1MB) {[string]::Format("{0:0.00} MB", $size / 1MB)}
-    ElseIf ($size -gt 1KB) {[string]::Format("{0:0.00} KB", $size / 1KB)}
-    ElseIf ($size -gt 0) {[string]::Format("{0:0.00} B", $size)}
-    Else {""}
+#region SITE TOOLS
+function showSiteTools {   
+    Write-Host "
+##################################################
+#                                                #
+#                  SITE TOOLS                    #
+#                                                #
+##################################################
+
+##################################################
+#                                                #
+#              PLEASE SELECT A TOOL              #
+#                                                #
+##################################################
+    
+##################################################
+#                                                #
+# 1: PRESS '1' FOR SITE MAP.                     #
+# 2: PRESS '2' FOR PII SCAN.                     #
+# Q: PRESS 'E' TO EXIT BACK TO THE MAIN MENU.    #
+#                                                #
+##################################################`n"
 }
 
 # OPTION "1"
@@ -366,8 +343,32 @@ function spoScanPII {
     Write-Host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; Write-Host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
     Write-Host "Report Saved: " -ForegroundColor DarkYellow -nonewline; Write-Host "$($reportPath)\$($reportName)" -ForegroundColor White;
 }
+#endregion
 
-# OPTION "2"
+#region USER TOOLS
+function showUserTools {   
+    Write-Host "
+##################################################
+#                                                #
+#                  USER TOOLS                    #
+#                                                #
+##################################################
+
+##################################################
+#                                                #
+#              PLEASE SELECT A TOOL              #
+#                                                #
+##################################################
+    
+##################################################
+#                                                #
+# 1: PRESS '1' FOR USER GROUP DELETION.          #
+# Q: PRESS 'E' TO EXIT BACK TO THE MAIN MENU.    #
+#                                                #
+##################################################`n"
+}
+
+# OPTION "1"
 function spoDeleteUserGroups {
     param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportPath,
           [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
@@ -399,6 +400,82 @@ function spoDeleteUserGroups {
     Write-Host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; Write-Host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
     Write-Host "Report Saved: " -ForegroundColor DarkYellow -nonewline; Write-Host "$($reportPath)\$($reportName)" -ForegroundColor White;
 }
+#endregion
+
+#region LIST TOOLS
+function showListTools {   
+    Write-Host "
+##################################################
+#                                                #
+#                  LIST TOOLS                    #
+#                                                #
+##################################################
+
+##################################################
+#                                                #
+#              PLEASE SELECT A TOOL              #
+#                                                #
+##################################################
+    
+##################################################
+#                                                #
+# 1: PRESS '1' DELETE ALL LIST ITEMS.            #
+# Q: PRESS 'E' TO EXIT BACK TO THE MAIN MENU.    #
+#                                                #
+##################################################`n"
+}
+
+# OPTION "1"
+function spoDeleteAllListItems {
+    param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportPath,
+          [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
+
+    $sitePath = Read-Host "ENTER SITE COLLECTION URL"
+    $results = @()
+    
+
+    Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
+    $lists = @()
+
+    Get-PnPList | Where-Object { $_.BaseTemplate -eq 100 } | ForEach-Object { listsGet.add($_.Title) }
+
+    do {
+        Write-Host "
+##################################################
+#                                                #
+#              PLEASE SELECT A LIST              #
+#                                                #
+##################################################`n"
+        foreach ($list in $lists) {
+            Write-Host "$($lists.IndexOf($list)+1): PRESS $($lists.IndexOf($list)+1) for $($list)"
+        }
+        $listChoice = Read-Host "PLEASE MAKE A SELECTION"
+    } while (-not($lists[$listChoice-1]))
+
+    $listItems =  Get-PnPListItem -List $lists[$listChoice-1] -PageSize 500
+    $Batch = New-PnPBatch
+    ForEach($item in $listItems) {    
+         Remove-PnPListItem -List $lists[$listChoice-1] -Identity $item.id -Recycle -Batch $Batch
+
+         $results = New-Object PSObject -Property @{
+            ListName = $lists[$listChoice-1]
+            ItemID = $_.id
+        }
+
+        if (test-path "$($reportPath)\$($reportName)") {
+            $results | Select-Object "ListName", "ItemID" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation -Append
+        } else {
+            $results | Select-Object "ListName", "ItemID" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation
+        }
+    }
+    Invoke-PnPBatch -Batch $Batch
+
+    Disconnect-PnPOnline
+
+    Write-Host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; Write-Host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
+    Write-Host "Report Saved: " -ForegroundColor DarkYellow -nonewline; Write-Host "$($reportPath)\$($reportName)" -ForegroundColor White;
+}
+#endregion
 
 $setupPath = "C:\users\$env:USERNAME\Documents\SOPA"
 $setupReportPath = $setupPath + "\Reports"
@@ -412,6 +489,7 @@ do {
     showMenu
     $menuMain = Read-Host "PLEASE MAKE A SELECTION"
     switch ($menuMain) {
+        #region SITE TOOLS
         "1" {
             do {
                 showSiteTools
@@ -426,6 +504,9 @@ do {
                 }
             } until ($menuSiteTools -eq "e")
         }
+        #endregion
+
+        #region USER TOOLS
         "2" {
             do {
                 showUserTools
@@ -437,6 +518,23 @@ do {
                 }
             } until ($menuUserTools -eq "e")
         }
+        #endregion
+
+        #region LIST TOOLS
+        "3" {
+            do {
+                showListTools
+                $menuUserTools = Read-Host "PLEASE MAKE A SELECTION"
+                switch ($menuUserTools) {
+                    "1" {
+                        spoDeleteAllListItems -reportPath $setupReportPath -reportName "DELETEDLISTITEMS_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
+                    }
+                }
+            } until ($menuUserTools -eq "e")
+        }
+        #endregion
+
+        #region SETTINGS
         "s" {
             do {
                 showSettings
@@ -450,6 +548,8 @@ do {
                     }
                 }
             } until ($menuSettings -eq "e")
+            showSetup -SetupPath $setupPath -ReportPath $setupReportPath -DirtyWordsPath $setupDirtyWordsPath -DirtyWordsFilePath $setupDirtyWordsFilePath
         }
+        #endregion
     }
 } until ($menuMain -eq "q")
