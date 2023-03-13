@@ -86,16 +86,14 @@ function showMenu {
 #                                                         #
 #        WELCOME TO THE SHAREPOINT ONLINE ASSISTANT       #
 #                                                         #
-###########################################################
-
+###########################################################`n
 ###########################################################
 #                                                         #
 #                        MAIN MENU                        #
 #                                                         #
 #             WHICH TOOL WOULD YOU LIKE TO USE?           #
 #                                                         #
-##########################################################
-    
+###########################################################`n
 ###########################################################
 #                                                         #
 # 1: PRESS '1' FOR SITE TOOLS.                            #
@@ -114,8 +112,7 @@ function showSettings {
 #                                                         #
 #                  PLEASE SELECT A SETTING                #
 #                                                         #
-###########################################################
-    
+###########################################################`n
 ###########################################################
 #                                                         #
 # 1: PRESS '1' TO OPEN SPOA FOLDER                        #
@@ -135,15 +132,15 @@ function showSiteTools {
 #                                                         #
 #                   PLEASE SELECT A TOOL                  #
 #                                                         #
-###########################################################
-    
+###########################################################`n
 ###########################################################
 #                                                         #
 # 1: PRESS '1' FOR SITE MAP REPORT.                       #
 # 2: PRESS '2' FOR PII SCAN REPORT.                       #
 # 3: PRESS '3' FOR SITE COLLECTION ADMIN REPORT.          #
-# 4: PRESS '4' FOR SITE COLLECTION GROUP REPORT.          #
-# Q: PRESS 'E' TO EXIT BACK TO THE MAIN MENU.             #
+# 4: PRESS '4' FOR SITE COLLECTION ADMIN DELETE.          #
+# 5: PRESS '5' FOR SITE COLLECTION GROUP REPORT.          #
+# E: PRESS 'E' TO EXIT BACK TO THE MAIN MENU.             #
 #                                                         #
 ###########################################################`n"
 }
@@ -365,11 +362,10 @@ function spoGetSiteCollectionAdmins {
     param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportPath,
           [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
 
+    $sitePath = Read-Host "ENTER SITE COLLECTION URL"
     Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
 
-    $sitePath = Read-Host "ENTER SITE COLLECTION URL"
-
-    Get-PnPSiteCollectionAdmin | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation
+    Get-PnPSiteCollectionAdmin | Select-Object "Id", "Title", "Email", "LoginName", "IsSiteAdmin", "IsShareByEmailGuestUser", "IsHiddenInUI", "PrincipalType" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation
 
     Disconnect-PnPOnline
 
@@ -378,14 +374,76 @@ function spoGetSiteCollectionAdmins {
 }
 
 # OPTION "4"
+function spoDeleteSiteCollectionAdmin {
+    param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportPath,
+          [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
+
+    $sitePath = Read-Host "ENTER SITE COLLECTION URL"
+    $results = @()
+    
+    Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
+    $getAdmins = @()
+
+    Get-PnPSiteCollectionAdmin | ForEach-Object { $getAdmins += $_.Title }
+
+    do {
+        Write-Host "
+###########################################################
+#                                                         #
+#                  PLEASE SELECT AN ADMIN                 #
+#                                                         #
+###########################################################`n"
+        foreach ($admin in $getAdmins) {
+            Write-Host "$($getAdmins.IndexOf($admin)+1): PRESS $($getAdmins.IndexOf($admin)+1) for $($admin)"
+        }
+        $adminChoice = Read-Host "PLEASE MAKE A SELECTION"
+    } while (-not($getAdmins[$adminChoice-1]))
+
+    Remove-PnPSiteCollectionAdmin -Owners $getAdmins[$adminChoice-1]
+
+    $results = New-Object PSObject -Property @{
+        AdminDeleted = $getAdmins[$adminChoice-1]
+    }
+
+    if (-not(test-path "$($reportPath)\$($reportName)")) {
+        $results | Select-Object "AdminDeleted" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation
+    }
+    Disconnect-PnPOnline
+
+    Write-Host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; Write-Host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
+    Write-Host "Report Saved: " -ForegroundColor DarkYellow -nonewline; Write-Host "$($reportPath)\$($reportName)" -ForegroundColor White;
+}
+
+# OPTION "5"
 function spoGetSiteCollectionGroups {
     param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportPath,
           [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
 
     $sitePath = Read-Host "ENTER SITE COLLECTION URL"
+    $results = @()
+
     Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
- 
-    Get-PnPGroup | Where {$_.IsHiddenInUI -eq $false -and $_.LoginName -notlike "Limited Access*" -and $_.LoginName -notlike "SharingLinks*"} | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation
+    Get-PnPGroup | Where {$_.IsHiddenInUI -eq $false -and $_.LoginName -notlike "Limited Access*" -and $_.LoginName -notlike "SharingLinks*"} | Select-Object "Id", "Title", "LoginName", "OwnerTitle" | Foreach-Object {
+        $members = @()
+        Get-PnPGroupMember -Identity $_.Title | Foreach-Object {
+            $members += "$($_.Title)" 
+        }
+        $members = $members | Out-String
+
+        $results = New-Object PSObject -Property @{
+            ID = $_.Id
+            GroupName = $_.Title
+            LoginName = $_.LoginName
+            OwnerTitle = $_.OwnerTitle
+            Members = $members
+        }
+
+        if (test-path "$($reportPath)\$($reportName)") {
+            $results | Select-Object "ID", "GroupName", "LoginName", "OwnerTitle", "Members" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation -Append
+        } else {
+            $results | Select-Object "ID", "GroupName", "LoginName", "OwnerTitle", "Members" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation
+        }
+    }
 
     Disconnect-PnPOnline
 
@@ -403,8 +461,7 @@ function showUserTools {
 #                                                         #
 #                   PLEASE SELECT A TOOL                  #
 #                                                         #
-###########################################################
-    
+###########################################################`n
 ###########################################################
 #                                                         #
 # 1: PRESS '1' FOR USER DELETION.                         #
@@ -425,19 +482,19 @@ function spoDeleteUser {
 
     Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
     $userInformation = Get-PnPUser | ? Email -eq $userEmail | ForEach-Object { 
-        Write-Host "Name: $_.Title | User Deleted:" -ForegroundColor Yellow
+        Write-Host "User Deleted: $($_.Title)" -ForegroundColor Yellow
 
-        Remove-PnPUser -Identity $_.Email -Force
+        Remove-PnPUser -Identity $_.Title -Force
 
         $results = New-Object PSObject -Property @{
-            UserDisplay = $_.Title
+            UserDeleted = $_.Title
             UserEmail = $_.Email
         }
 
         if (test-path "$($reportPath)\$($reportName)") {
-            $results | Select-Object "UserDisplay", "UserEmail" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation -Append
+            $results | Select-Object "UserDeleted", "UserEmail" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation -Append
         } else {
-            $results | Select-Object "UserDisplay", "UserEmail" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation
+            $results | Select-Object "UserDeleted", "UserEmail" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation
         }
     
     
@@ -491,8 +548,7 @@ function showListTools {
 #                                                         #
 #                  PLEASE SELECT A SETTING                #
 #                                                         #
-###########################################################
-    
+###########################################################`n
 ###########################################################
 #                                                         #
 # 1: PRESS '1' DELETE ALL LIST ITEMS.                     #
@@ -511,37 +567,37 @@ function spoDeleteAllListItems {
     
 
     Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
-    $lists = @()
+    $listsGet = @()
 
-    Get-PnPList | Where-Object { $_.BaseTemplate -eq 100 } | ForEach-Object { listsGet.add($_.Title) }
+    Get-PnPList | Where-Object { $_.Hidden -eq $false -and $_.BaseTemplate -eq 100 } | ForEach-Object { $listsGet += ($_.Title) }
 
     do {
         Write-Host "
-##################################################
-#                                                #
-#              PLEASE SELECT A LIST              #
-#                                                #
-##################################################`n"
-        foreach ($list in $lists) {
-            Write-Host "$($lists.IndexOf($list)+1): PRESS $($lists.IndexOf($list)+1) for $($list)"
+###########################################################
+#                                                         #
+#                   PLEASE SELECT A LIST                  #
+#                                                         #
+###########################################################`n"
+        foreach ($list in $listsGet) {
+            Write-Host "$($listsGet.IndexOf($list)+1): PRESS $($listsGet.IndexOf($list)+1) for $($list)"
         }
         $listChoice = Read-Host "PLEASE MAKE A SELECTION"
-    } while (-not($lists[$listChoice-1]))
+    } while (-not($listsGet[$listChoice-1]))
 
-    $listItems =  Get-PnPListItem -List $lists[$listChoice-1] -PageSize 500
+    $listItems =  Get-PnPListItem -List $listsGet[$listChoice-1] -PageSize 500
     $Batch = New-PnPBatch
     ForEach($item in $listItems) {    
-         Remove-PnPListItem -List $lists[$listChoice-1] -Identity $item.id -Recycle -Batch $Batch
+         Remove-PnPListItem -List $listsGet[$listChoice-1] -Identity $item.Id -Recycle -Batch $Batch
 
          $results = New-Object PSObject -Property @{
-            ListName = $lists[$listChoice-1]
-            ItemID = $_.id
+            ListName = $listsGet[$listChoice-1]
+            ItemDeletedID = $item.Id
         }
 
         if (test-path "$($reportPath)\$($reportName)") {
-            $results | Select-Object "ListName", "ItemID" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation -Append
+            $results | Select-Object "ListName", "ItemDeletedID" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation -Append
         } else {
-            $results | Select-Object "ListName", "ItemID" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation
+            $results | Select-Object "ListName", "ItemDeletedID" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation
         }
     }
     Invoke-PnPBatch -Batch $Batch
@@ -582,7 +638,10 @@ do {
                         spoGetSiteCollectionAdmins -reportPath $setupReportPath -reportName "SPOSITECOLLECTIONADMINS_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
                     }
                     "4" {
-                        spoGetSiteCollectionGroups -reportPath $setupReportPath -reportName "SPOSITECOLLECTIONADMINS_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
+                        spoDeleteSiteCollectionAdmin -reportPath $setupReportPath -reportName "SPOSITECOLLECTIONADMINDELETE_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
+                    }
+                    "5" {
+                        spoGetSiteCollectionGroups -reportPath $setupReportPath -reportName "SPOSITECOLLECTIONGROUPS_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
                     }
                 }
             } until ($menuSiteTools -eq "e")
