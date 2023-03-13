@@ -50,74 +50,74 @@ function showSetup {
 
 function showMenu {
     Write-Host "
-##################################################
-#                                                #
-#        ░██████╗██████╗░░█████╗░░█████╗░        #
-#        ██╔════╝██╔══██╗██╔══██╗██╔══██╗        #
-#        ╚█████╗░██████╔╝██║░░██║███████║        #
-#        ░╚═══██╗██╔═══╝░██║░░██║██╔══██║        #
-#        ██████╔╝██║░░░░░╚█████╔╝██║░░██║        #
-#        ╚═════╝░╚═╝░░░░░░╚════╝░╚═╝░░╚═╝        #
-#                                                #
-#   WELCOME TO THE SHAREPOINT ONLINE ASSISTANT   #
-#                                                #
-##################################################
+###########################################################
+#                                                         #
+#             ░██████╗██████╗░░█████╗░░█████╗░            #
+#             ██╔════╝██╔══██╗██╔══██╗██╔══██╗            #
+#             ╚█████╗░██████╔╝██║░░██║███████║            #
+#             ░╚═══██╗██╔═══╝░██║░░██║██╔══██║            #
+#             ██████╔╝██║░░░░░╚█████╔╝██║░░██║            #
+#             ╚═════╝░╚═╝░░░░░░╚════╝░╚═╝░░╚═╝            #
+#                                                         #
+#        WELCOME TO THE SHAREPOINT ONLINE ASSISTANT       #
+#                                                         #
+###########################################################
 
-##################################################
-#                                                #
-#                   MAIN MENU                    #
-#                                                #
-#        WHICH TOOL WOULD YOU LIKE TO USE?       #
-#                                                #
-##################################################
+###########################################################
+#                                                         #
+#                        MAIN MENU                        #
+#                                                         #
+#             WHICH TOOL WOULD YOU LIKE TO USE?           #
+#                                                         #
+##########################################################
     
-##################################################
-#                                                #
-# 1: PRESS '1' FOR SITE TOOLS.                   #
-# 2: PRESS '2' FOR USER TOOLS.                   #
-# 3: PRESS '3' FOR LIST TOOLS.                   #
-# PRESS 'S' FOR SETTINGS OR 'Q' TO QUIT          #
-#                                                #
-##################################################`n"
+###########################################################
+#                                                         #
+# 1: PRESS '1' FOR SITE TOOLS.                            #
+# 2: PRESS '2' FOR USER TOOLS.                            #
+# 3: PRESS '3' FOR LIST TOOLS.                            #
+# PRESS 'S' FOR SETTINGS OR 'Q' TO QUIT                   #
+#                                                         #
+###########################################################`n"
 }
 
 function showSettings {   
     Write-Host "
-##################################################
-#                                                #
-#                   SETTINGS                     #
-#                                                #
-#             PLEASE SELECT A SETTING            #
-#                                                #
-##################################################
+###########################################################
+#                                                         #
+#                        SETTINGS                         #
+#                                                         #
+#                  PLEASE SELECT A SETTING                #
+#                                                         #
+###########################################################
     
-##################################################
-#                                                #
-# 1: PRESS '1' TO OPEN SPOA FOLDER               #
-# 2: PRESS '2' TO OPEN THE DIRTY WORD LIST.      #
-# Q: PRESS 'E' TO EXIT BACK TO THE MAIN MENU.    #
-#                                                #
-##################################################`n"
+###########################################################
+#                                                         #
+# 1: PRESS '1' TO OPEN SPOA FOLDER                        #
+# 2: PRESS '2' TO OPEN THE DIRTY WORD LIST.               #
+# Q: PRESS 'E' TO EXIT BACK TO THE MAIN MENU.             #
+#                                                         #
+###########################################################`n"
 }
 
 #region SITE TOOLS
 function showSiteTools {   
     Write-Host "
-##################################################
-#                                                #
-#                  SITE TOOLS                    #
-#                                                #
-#              PLEASE SELECT A TOOL              #
-#                                                #
-##################################################
+###########################################################
+#                                                         #
+#                       SITE TOOLS                        #
+#                                                         #
+#                   PLEASE SELECT A TOOL                  #
+#                                                         #
+###########################################################
     
-##################################################
-#                                                #
-# 1: PRESS '1' FOR SITE MAP.                     #
-# 2: PRESS '2' FOR PII SCAN.                     #
-# Q: PRESS 'E' TO EXIT BACK TO THE MAIN MENU.    #
-#                                                #
-##################################################`n"
+###########################################################
+#                                                         #
+# 1: PRESS '1' FOR SITE MAP.                              #
+# 2: PRESS '2' FOR PII SCAN.                              #
+# Q: PRESS 'E' TO EXIT BACK TO THE MAIN MENU.             #
+#                                                         #
+###########################################################`n"
 }
 
 # OPTION "1"
@@ -336,23 +336,58 @@ function spoScanPII {
 #region USER TOOLS
 function showUserTools {   
     Write-Host "
-##################################################
-#                                                #
-#                  USER TOOLS                    #
-#                                                #
-#              PLEASE SELECT A TOOL              #
-#                                                #
-##################################################
+###########################################################
+#                                                         #
+#                       USER TOOLS                        #
+#                                                         #
+#                   PLEASE SELECT A TOOL                  #
+#                                                         #
+###########################################################
     
-##################################################
-#                                                #
-# 1: PRESS '1' FOR USER GROUP DELETION.          #
-# Q: PRESS 'E' TO EXIT BACK TO THE MAIN MENU.    #
-#                                                #
-##################################################`n"
+###########################################################
+#                                                         #
+# 1: PRESS '1' FOR USER DELETION.                         #
+# 1: PRESS '2' FOR ALL ASSIGNED USER GROUP DELETION.      #
+# Q: PRESS 'E' TO EXIT BACK TO THE MAIN MENU.             #
+#                                                         #
+###########################################################`n"
 }
 
 # OPTION "1"
+function spoDeleteUser {
+    param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportPath,
+          [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
+
+    $sitePath = Read-Host "ENTER SITE COLLECTION URL"
+    $userEmail = Read-Host "ENTER USERS EMAIL"
+    $results = @()
+
+    Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
+    $userInformation = Get-PnPUser | ? Email -eq $userEmail | ForEach-Object { 
+        Write-Host "Name: $_.Title | User Deleted:" -ForegroundColor Yellow
+
+        Remove-PnPUser -Identity $_.Email -Force
+
+        $results = New-Object PSObject -Property @{
+            UserDisplay = $_.Title
+            UserEmail = $_.Email
+        }
+
+        if (test-path "$($reportPath)\$($reportName)") {
+            $results | Select-Object "UserDisplay", "UserEmail" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation -Append
+        } else {
+            $results | Select-Object "UserDisplay", "UserEmail" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation
+        }
+    
+    
+    }
+    Disconnect-PnPOnline
+
+    Write-Host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; Write-Host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
+    Write-Host "Report Saved: " -ForegroundColor DarkYellow -nonewline; Write-Host "$($reportPath)\$($reportName)" -ForegroundColor White;
+}
+
+# OPTION "2"
 function spoDeleteUserGroups {
     param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportPath,
           [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
@@ -389,20 +424,20 @@ function spoDeleteUserGroups {
 #region LIST TOOLS
 function showListTools {   
     Write-Host "
-##################################################
-#                                                #
-#                  LIST TOOLS                    #
-#                                                #
-#              PLEASE SELECT A TOOL              #
-#                                                #
-##################################################
+###########################################################
+#                                                         #
+#                       LIST TOOLS                        #
+#                                                         #
+#                  PLEASE SELECT A SETTING                #
+#                                                         #
+###########################################################
     
-##################################################
-#                                                #
-# 1: PRESS '1' DELETE ALL LIST ITEMS.            #
-# Q: PRESS 'E' TO EXIT BACK TO THE MAIN MENU.    #
-#                                                #
-##################################################`n"
+###########################################################
+#                                                         #
+# 1: PRESS '1' DELETE ALL LIST ITEMS.                     #
+# Q: PRESS 'E' TO EXIT BACK TO THE MAIN MENU.             #
+#                                                         #
+###########################################################`n"
 }
 
 # OPTION "1"
@@ -410,7 +445,7 @@ function spoDeleteAllListItems {
     param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportPath,
           [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
 
-    $sitePath = Read-Host "ENTER SITE COLLECTION URL"
+    $sitePath = Read-Host "ENTER SITE URL THAT LIST RESIDES ON"
     $results = @()
     
 
@@ -493,6 +528,9 @@ do {
                 $menuUserTools = Read-Host "PLEASE MAKE A SELECTION"
                 switch ($menuUserTools) {
                     "1" {
+                        spoDeleteUser -reportPath $setupReportPath -reportName "DELETEUSER_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
+                    }
+                    "2" {
                         spoDeleteUserGroups -reportPath $setupReportPath -reportName "DELETEUSERGROUPS_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
                     }
                 }
