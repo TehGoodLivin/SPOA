@@ -1,0 +1,60 @@
+$results = @()
+$computerPath = Read-Host "ENTER DIRECTORY TO COPY"
+$sitePath = Read-Host "ENTER SITE COLLECTION URL"
+
+Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
+$getDocumentLibraries = @()
+
+Get-PnPList | Where-Object { $_.Hidden -eq $false -and $_.BaseTemplate -eq 101 } | ForEach-Object { $getDocumentLibraries += $_.Title }
+
+do {
+    Write-Host "
+###########################################################
+#                                                         #
+#             PLEASE SELECT A DOCUMENT LIBRARY            #
+#                                                         #
+###########################################################`n"
+    foreach ($documentLibrary in $getDocumentLibraries) {
+        Write-Host "$($getDocumentLibraries.IndexOf($documentLibrary)+1): PRESS $($getDocumentLibraries.IndexOf($documentLibrary)+1) for $($documentLibrary)"
+    }
+    $documentLibraryChoice = Read-Host "`nPLEASE MAKE A SELECTION"
+} while (-not($getDocumentLibraries[$documentLibraryChoice-1]))
+
+$getMessage = "
+###########################################################
+#                                                         #
+#           PLEASE SELECT A LOCATION TO COPY TO           #
+#                                                         #
+###########################################################`n"
+
+Write-Host $getMessage
+$documentLibraryFolder = ""
+$getFolder = Read-Host "PLEASE MAKE A SELECTION"
+
+do {
+    $getFolders = @()
+    Get-ChildItem –Path $getFolder -Directory -Force -ErrorAction SilentlyContinue | ForEach-Object { $getFolders += $_.FullName }
+
+    if($getFolders.count) {
+        Write-Host $getMessage
+        foreach ($getChild in $getFolders) {
+            Write-Host "$($getFolders.IndexOf($getChild)+1): PRESS $($getFolders.IndexOf($getChild)+1) for $($getChild)"
+        }
+        Write-Host "S: PRESS S to Select Current Folder"
+        $folderChoice = Read-Host "`nPLEASE MAKE A SELECTION"
+    } else {
+        $folderChoice = "S"
+    }
+
+    if($folderChoice -eq "S") {
+        $documentLibraryFolder = $getFolder
+    } else {
+        $getFolder = $getFolders[$folderChoice-1]
+    }
+} while ($documentLibraryFolder -eq "")
+
+Write-Host "`nFolder: $($documentLibraryFolder)"
+$Confirm = Read-Host "WOULD YOU LIKE TO UPLOAD DOCUMENTS TO THIS FOLDER? [Y] Yes [N] No"
+if($Confirm -match "[yY]") {
+    Write-Host "COPYING"
+}
