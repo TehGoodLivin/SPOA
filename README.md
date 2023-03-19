@@ -23,22 +23,9 @@ SOFTWARE.
 # SPOA
 A PnP PowerShell Tool used to assist with SharePoint Online
 
-## Features
-### Site Tools
-* Site Map.
-* PII Scan.
-* Site Collection Admins.
-* Site Collection Admin Removal.
-* Site Collection Groups.
-
-### User Tools
-* User Delete (This will remove all permissions for user).
-* Remove all user groups.
-
-### List Tools
-* Delete all list items (Custom Lists)
-
 ## Install PnP PowerShell
+The script will automatically run this for you and check for updates.
+
 1.	Open “Windows PowerShell ISE”. You can type this in the windows search bar to find the exact program.
 
 2.	Run the following command: Install-Module -Name PnP.PowerShell -Scope CurrentUser
