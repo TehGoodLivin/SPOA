@@ -36,9 +36,9 @@ function reportCreate {
           [Parameter(Mandatory)][object[]]$reportData)
 
     if (test-path $reportPath) {
-        $reportData | Export-Csv -Path $reportPath -Force -NoTypeInformation -Append
+        $reportData | export-csv -Path $reportPath -Force -NoTypeInformation -Append
     } else {
-        $reportData | Export-Csv -Path $reportPath -Force -NoTypeInformation
+        $reportData | export-csv -Path $reportPath -Force -NoTypeInformation
     }
 }
 #endregion
@@ -51,32 +51,32 @@ function showSetup {
           [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$DirtyWordsFilePath)
 
     Clear-Host
-    $isInstalled=Get-InstalledModule -Name PnP.PowerShell -ErrorAction silentlycontinue
-    if($isInstalled.count -eq 0) {
-        $Confirm = Read-Host "WOULD YOU LIKE TO INSTALL SHAREPOINT PNP MODULE? [Y] Yes [N] No"
+    $isInstalled = Get-InstalledModule -Name PnP.PowerShell -ErrorAction silentlycontinue
+    if($isInstalled.Count -eq 0) {
+        $Confirm = read-host "WOULD YOU LIKE TO INSTALL SHAREPOINT PNP MODULE? [Y] Yes [N] No"
 
         if($Confirm -match "[yY]") {
             Install-Module -Name PnP.PowerShell -Scope CurrentUser
         } else {
-            Write-Host "SharePoint PnP module is needed to perform the functions of this script." -ForegroundColor red
+            write-host "SharePoint PnP module is needed to perform the functions of this script." -ForegroundColor red
             break
         }
     }
 
     if (-Not (test-path $SetupPath)) {
-        New-Item -Path $SetupPath -ItemType Directory | Out-Null
+        New-Item -Path $SetupPath -ItemType Directory | out-null
     }
 
     if (-Not (test-path $ReportPath)) {
-        New-Item -Path $ReportPath -ItemType Directory | Out-Null
+        New-Item -Path $ReportPath -ItemType Directory | out-null
     }
 
     if (-Not (test-path $DirtyWordsPath)) {
-        New-Item -Path $DirtyWordsPath -ItemType Directory | Out-Null
+        New-Item -Path $DirtyWordsPath -ItemType Directory | out-null
     }
 
     if (-Not (test-path $DirtyWordsFilePath)) {
-        $wordDefaultDirtySearchSet = @("\d{3}-\d{3}-\d{4}","\d{3}-\d{2}-\d{4}","MyFitness","CUI","UPMR","SURF","PA","2583","SF86","SF 86","FOUO","GTC","medical","AF469","AF 469","469","Visitor Request","VisitorRequest","Visitor","eQIP","EPR","910","AF910","AF 910","911","AF911","AF 911","OPR","eval","feedback","loc","loa","lor","alpha roster","alpha","roster","recall","SSN","SSAN","AF1466","1466","AF 1466","AF1566","AF 1566","1566","SGLV","SF182","182","SF 182","allocation notice","credit","allocation","2583","AF 1466","AF1466","1466","AF1566","AF 1566","1566","AF469","AF 469","469","AF 422","AF422","422","AF910","AF 910","910","AF911","AF 911","911","AF77","AF 77","77","AF475","AF 475","475","AF707","AF 707","707","AF709","AF 709","709","AF 724","AF724","724","AF912","AF 912","912","AF 931","AF931","931","AF932","AF 932","932","AF948","AF 948","948","AF 3538","AF3538","3538","AF3538E","AF 3538E","AF2096","AF 2096","2096","AF 2098","AF2098","AF 2098","AF 3538","AF3538","3538","1466","1566","469","422","travel","SF128","SF 128","128","SF 86","SF86","86","SGLV","SGLI","DD214","DD 214","214","DD 149","DD149","149") | Select-Object @{Name='Word';Expression={$_}} | Export-Csv $DirtyWordsFilePath -NoType
+        $wordDefaultDirtySearchSet = @("\d{3}-\d{3}-\d{4}","\d{3}-\d{2}-\d{4}","MyFitness","CUI","UPMR","SURF","PA","2583","SF86","SF 86","FOUO","GTC","medical","AF469","AF 469","469","Visitor Request","VisitorRequest","Visitor","eQIP","EPR","910","AF910","AF 910","911","AF911","AF 911","OPR","eval","feedback","loc","loa","lor","alpha roster","alpha","roster","recall","SSN","SSAN","AF1466","1466","AF 1466","AF1566","AF 1566","1566","SGLV","SF182","182","SF 182","allocation notice","credit","allocation","2583","AF 1466","AF1466","1466","AF1566","AF 1566","1566","AF469","AF 469","469","AF 422","AF422","422","AF910","AF 910","910","AF911","AF 911","911","AF77","AF 77","77","AF475","AF 475","475","AF707","AF 707","707","AF709","AF 709","709","AF 724","AF724","724","AF912","AF 912","912","AF 931","AF931","931","AF932","AF 932","932","AF948","AF 948","948","AF 3538","AF3538","3538","AF3538E","AF 3538E","AF2096","AF 2096","2096","AF 2098","AF2098","AF 2098","AF 3538","AF3538","3538","1466","1566","469","422","travel","SF128","SF 128","128","SF 86","SF86","86","SGLV","SGLI","DD214","DD 214","214","DD 149","DD149","149") | Select-Object @{Name='Word';Expression={$_}} | export-csv $DirtyWordsFilePath -NoType
     }
 
     if (test-path $DirtyWordsPath) {
@@ -155,13 +155,13 @@ function spoSiteMap {
     param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportPath,
           [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
 
-    $sitePath = Read-Host "`nENTER SITE COLLECTION URL"
+    $sitePath = read-host "`nENTER SITE COLLECTION URL"
     $results = @()
 
     Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
 
     $siteInfo = Get-PnPWeb -Includes Created | select Title, ServerRelativeUrl, Url, Created, Description
-    $siteLists = Get-PnPList | Where-Object {$_.Hidden -eq $false}
+    $siteLists = Get-PnPList | where-object {$_.Hidden -eq $false}
     $subSites = Get-PnPSubWeb -Recurse | select Title, ServerRelativeUrl, Url, Created, Description
 
     $siteListCount = @()
@@ -175,7 +175,7 @@ function spoSiteMap {
     $results = New-Object PSObject -Property @{
         Title = $siteInfo.Title
         ItemCount = $siteItemCount
-        ListCount = $siteListCount.Count
+        ListCount = $siteListCount.count
         ServerRelativeUrl = $siteInfo.ServerRelativeUrl
         Description = $siteInfo.Description
         Created = $siteInfo.Created
@@ -184,7 +184,7 @@ function spoSiteMap {
 
     foreach ($site in $subSites) {
         Connect-PnPOnline -Url $site.Url -UseWebLogin -WarningAction SilentlyContinue
-        $subSiteLists = Get-PnPList | Where-Object {$_.Hidden -eq $false}
+        $subSiteLists = Get-PnPList | where-object {$_.Hidden -eq $false}
 
         $subSiteListCount = @()
         $subSiteItemCount = 0
@@ -197,7 +197,7 @@ function spoSiteMap {
 
         $results = New-Object PSObject -Property @{
             Title = $site.Title
-            ListCount = $subSiteListCount.Count
+            ListCount = $subSiteListCount.count
             ItemCount = $subSiteItemCount
             ServerRelativeUrl = $site.ServerRelativeUrl
             Description = $site.Description
@@ -209,9 +209,9 @@ function spoSiteMap {
     # GET TOTAL COUNTS
     $results = New-Object PSObject -Property @{
         Title = "Total"
-        ListCount = $siteListCount.Count
+        ListCount = $siteListCount.count
         ItemCount = $siteItemCount
-        ServerRelativeUrl = $subSites.Count + 1
+        ServerRelativeUrl = $subSites.count + 1
         Description = ""
         Created = ""
     }
@@ -227,10 +227,10 @@ function spoScanPII {
     param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportPath,
           [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
 
-    $sitePath = Read-Host "`nENTER SITE COLLECTION URL"
+    $sitePath = read-host "`nENTER SITE COLLECTION URL"
     $results = @()
 
-    $Confirm = Read-Host "`nWOULD YOU LIKE TO SCAN ALL SUB-SITES? [Y] Yes [N] No"
+    $Confirm = read-host "`nWOULD YOU LIKE TO SCAN ALL SUB-SITES? [Y] Yes [N] No"
     if($Confirm -match "[yY]") {
         $siteParentOnly = $false
     } else {
@@ -238,12 +238,12 @@ function spoScanPII {
     }
 
     Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
-    $getDocLibs = Get-PnPList | Where-Object { $_.BaseTemplate -eq 101 }
+    $getDocLibs = Get-PnPList | where-object { $_.BaseTemplate -eq 101 }
 
     write-host "Searching: $($sitePath)" -ForegroundColor Green
 
     foreach ($DocLib in $getDocLibs) {
-        Get-PnPListItem -List $DocLib -Fields "FileRef", "File_x0020_Type", "FileLeafRef", "File_x0020_Size", "Created", "Modified" -PageSize 1000 | Where { $_["FileLeafRef"] -like "*.*" } | Foreach-Object {
+        Get-PnPListItem -List $DocLib -Fields "FileRef", "File_x0020_Type", "FileLeafRef", "File_x0020_Size", "Created", "Modified" -PageSize 1000 | Where { $_["FileLeafRef"] -like "*.*" } | foreach-object {
             foreach ($word in $global:wordDirtySearch) {
                 $wordSearch = "(?i)\b$($word.Word)\b"
 
@@ -286,12 +286,12 @@ function spoScanPII {
 
         foreach ($site in $subSites) {
             Connect-PnPOnline -Url $site.Url -UseWebLogin -WarningAction SilentlyContinue
-            $getSubDocLibs = Get-PnPList | Where-Object {$_.BaseTemplate -eq 101}
+            $getSubDocLibs = Get-PnPList | where-object {$_.BaseTemplate -eq 101}
 
             write-host "Searching: $($site.Url)" -ForegroundColor Green
 
             foreach ($subDocLib in $getSubDocLibs) {
-                Get-PnPListItem -List $subDocLib -Fields "FileRef", "File_x0020_Type", "FileLeafRef", "File_x0020_Size", "Created", "Modified" -PageSize 1000 | Where { $_["FileLeafRef"] -like "*.*" } | Foreach-Object {
+                Get-PnPListItem -List $subDocLib -Fields "FileRef", "File_x0020_Type", "FileLeafRef", "File_x0020_Size", "Created", "Modified" -PageSize 1000 | Where { $_["FileLeafRef"] -like "*.*" } | foreach-object {
                     foreach ($word in $global:wordDirtySearch) {
                         $wordSearch = "(?i)\b$($word.Word)\b"
 
@@ -342,10 +342,10 @@ function spoGetSiteCollectionAdmins {
           [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
     
     $results = @()
-    $sitePath = Read-Host "`nENTER SITE COLLECTION URL"
+    $sitePath = read-host "`nENTER SITE COLLECTION URL"
     Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
 
-    Get-PnPSiteCollectionAdmin | Foreach-Object {
+    Get-PnPSiteCollectionAdmin | foreach-object {
         $results = New-Object PSObject -Property @{
             Id = $_.Id
             Title = $_.Title
@@ -370,8 +370,8 @@ function spoAddSiteCollectionAdmin {
           [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
     
     $results = @()
-    $sitePath = Read-Host "`nENTER SITE COLLECTION URL"
-    $newAdmin = Read-Host "`nENTER NEW SITE COLLECTION ADMIN EMAIL"
+    $sitePath = read-host "`nENTER SITE COLLECTION URL"
+    $newAdmin = read-host "`nENTER NEW SITE COLLECTION ADMIN EMAIL"
     
     Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
     Add-PnPSiteCollectionAdmin -Owners $newAdmin
@@ -392,7 +392,7 @@ function spoDeleteSiteCollectionAdmin {
           [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
     
     $results = @()
-    $sitePath = Read-Host "`nENTER SITE COLLECTION URL"
+    $sitePath = read-host "`nENTER SITE COLLECTION URL"
     
     Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
 
@@ -404,7 +404,7 @@ function spoDeleteSiteCollectionAdmin {
         foreach ($admin in $getAdmins) {
             write-host "`t$($getAdmins.IndexOf($admin)+1): PRESS $($getAdmins.IndexOf($admin)+1) for $($admin.Title)"
         }
-        $adminChoice = Read-Host "PLEASE MAKE A SELECTION"
+        $adminChoice = read-host "PLEASE MAKE A SELECTION"
     } while (-not($getAdmins[$adminChoice-1]))
 
     Remove-PnPSiteCollectionAdmin -Owners $getAdmins[$adminChoice-1].Title
@@ -424,13 +424,13 @@ function spoGetSiteCollectionGroups {
     param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportPath,
           [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
 
-    $sitePath = Read-Host "`nENTER SITE COLLECTION URL"
+    $sitePath = read-host "`nENTER SITE COLLECTION URL"
     $results = @()
 
     Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
-    Get-PnPGroup | Where {$_.IsHiddenInUI -eq $false -and $_.LoginName -notlike "Limited Access*" -and $_.LoginName -notlike "SharingLinks*"} | Select-Object "Id", "Title", "LoginName", "OwnerTitle" | Foreach-Object {
+    Get-PnPGroup | Where {$_.IsHiddenInUI -eq $false -and $_.LoginName -notlike "Limited Access*" -and $_.LoginName -notlike "SharingLinks*"} | Select-Object "Id", "Title", "LoginName", "OwnerTitle" | foreach-object {
         $members = @()
-        Get-PnPGroupMember -Identity $_.Title | Foreach-Object {
+        Get-PnPGroupMember -Identity $_.Title | foreach-object {
             $members += "$($_.Title)" 
         }
         $members = $members | Out-String
@@ -464,12 +464,12 @@ function spoDeleteUser {
     param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportPath,
           [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
 
-    $sitePath = Read-Host "`nENTER SITE COLLECTION URL"
-    $userEmail = Read-Host "`nENTER USERS EMAIL"
+    $sitePath = read-host "`nENTER SITE COLLECTION URL"
+    $userEmail = read-host "`nENTER USERS EMAIL"
     $results = @()
 
     Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
-    $userInformation = Get-PnPUser | ? Email -eq $userEmail | ForEach-Object { 
+    $userInformation = Get-PnPUser | ? Email -eq $userEmail | foreach-object { 
         Remove-PnPUser -Identity $_.Title -Force
         write-host "User Deleted: $($_.Title)" -ForegroundColor Yellow
 
@@ -490,13 +490,13 @@ function spoDeleteUserGroups {
     param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportPath,
           [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
 
-    $sitePath = Read-Host "`nENTER SITE COLLECTION URL"
-    $userEmail = Read-Host "`nENTER USERS EMAIL"
+    $sitePath = read-host "`nENTER SITE COLLECTION URL"
+    $userEmail = read-host "`nENTER USERS EMAIL"
     $results = @()
 
     Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
-    $userInformation = Get-PnPUser | ? Email -eq $userEmail | ForEach-Object { $_.Title }
-    $userGroups = Get-PnPUser | ? Email -eq $userEmail | Select -ExpandProperty Groups | Where { ($_.Title -notmatch "Limited Access*") -and ($_.Title -notmatch "SharingLinks*") } | ForEach-Object { 
+    $userInformation = Get-PnPUser | ? Email -eq $userEmail | foreach-object { $_.Title }
+    $userGroups = Get-PnPUser | ? Email -eq $userEmail | Select -ExpandProperty Groups | Where { ($_.Title -notmatch "Limited Access*") -and ($_.Title -notmatch "SharingLinks*") } | foreach-object { 
         write-host "Name: $userInformation | Group Removed: " -ForegroundColor Yellow -NoNewline; write-host $($_.Title) -ForegroundColor Cyan
 
         Remove-PnPGroupMember -LoginName $userEmail -Identity $_.Title 
@@ -527,13 +527,13 @@ function spoShowList {
     param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportPath,
           [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
 
-    $sitePath = Read-Host "`nENTER SITE URL THAT LIST RESIDES ON"
+    $sitePath = read-host "`nENTER SITE URL THAT LIST RESIDES ON"
     $results = @()
     
     Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
 
     $listsGet = @()
-    Get-PnPList | Where-Object { $_.Hidden -eq $true -and ($_.BaseTemplate -eq 100 -or $_.BaseTemplate -eq 101 -or $_.BaseTemplate -eq 102 -or $_.BaseTemplate -eq 103 -or $_.BaseTemplate -eq 104 -or $_.BaseTemplate -eq 105 -or $_.BaseTemplate -eq 106 -or $_.BaseTemplate -eq 107 -or $_.BaseTemplate -eq 108 -or $_.BaseTemplate -eq 109) } | ForEach-Object { $listsGet += $_ }
+    Get-PnPList | where-object { $_.Hidden -eq $true -and ($_.BaseTemplate -eq 100 -or $_.BaseTemplate -eq 101 -or $_.BaseTemplate -eq 102 -or $_.BaseTemplate -eq 103 -or $_.BaseTemplate -eq 104 -or $_.BaseTemplate -eq 105 -or $_.BaseTemplate -eq 106 -or $_.BaseTemplate -eq 107 -or $_.BaseTemplate -eq 108 -or $_.BaseTemplate -eq 109) } | foreach-object { $listsGet += $_ }
 
     if ($listsGet.count) {
         do {
@@ -541,7 +541,7 @@ function spoShowList {
             foreach ($list in $listsGet) {
                 write-host "`t$($listsGet.IndexOf($list)+1): PRESS $($listsGet.IndexOf($list)+1) for $($list.Title)"
             }
-            $listChoice = Read-Host "`nPLEASE MAKE A SELECTION"
+            $listChoice = read-host "`nPLEASE MAKE A SELECTION"
         } while (-not($listsGet[$listChoice-1]))
 
         Set-PnPList -Identity $listsGet[$listChoice-1].Title -Hidden $false
@@ -564,13 +564,13 @@ function spoHideList {
     param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportPath,
           [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
 
-    $sitePath = Read-Host "`nENTER SITE URL THAT LIST RESIDES ON"
+    $sitePath = read-host "`nENTER SITE URL THAT LIST RESIDES ON"
     $results = @()
     
     Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
 
     $listsGet = @()
-    Get-PnPList | Where-Object { $_.Hidden -eq $false } | ForEach-Object { $listsGet += $_ }
+    Get-PnPList | where-object { $_.Hidden -eq $false } | foreach-object { $listsGet += $_ }
 
     if ($listsGet.count) {
         do {
@@ -578,7 +578,7 @@ function spoHideList {
             foreach ($list in $listsGet) {
                 write-host "`t$($listsGet.IndexOf($list)+1): PRESS $($listsGet.IndexOf($list)+1) for $($list.Title)"
             }
-            $listChoice = Read-Host "`nPLEASE MAKE A SELECTION"
+            $listChoice = read-host "`nPLEASE MAKE A SELECTION"
         } while (-not($listsGet[$listChoice-1]))
 
         Set-PnPList -Identity $listsGet[$listChoice-1].Title -Hidden $true
@@ -609,20 +609,20 @@ function spoDeleteAllListItems {
     param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportPath,
           [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
 
-    $sitePath = Read-Host "`nENTER SITE URL THAT LIST RESIDES ON"
+    $sitePath = read-host "`nENTER SITE URL THAT LIST RESIDES ON"
     $results = @()
     
     Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
     $listsGet = @()
 
-    Get-PnPList | Where-Object { $_.Hidden -eq $false -and $_.BaseTemplate -eq 100 } | ForEach-Object { $listsGet += ($_) }
+    Get-PnPList | where-object { $_.Hidden -eq $false -and $_.BaseTemplate -eq 100 } | foreach-object { $listsGet += ($_) }
 
     do {
         write-host "`nPLEASE SELECT A LIST`n"
         foreach ($list in $listsGet) {
             write-host "`t$($listsGet.IndexOf($list)+1): PRESS $($listsGet.IndexOf($list)+1) for $($list.Title)"
         }
-        $listChoice = Read-Host "`nPLEASE MAKE A SELECTION"
+        $listChoice = read-host "`nPLEASE MAKE A SELECTION"
     } while (-not($listsGet[$listChoice-1]))
 
     $listItems =  Get-PnPListItem -List $listsGet[$listChoice-1].Title -PageSize 500
@@ -657,9 +657,9 @@ function spoUploadDocumentItems {
           [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
 
     $results = @()
-    $sitePath = Read-Host "ENTER SITE URL THAT DOCUMENT LIBRARY RESIDES ON"
+    $sitePath = read-host "ENTER SITE URL THAT DOCUMENT LIBRARY RESIDES ON"
     $sitePath = $sitePath.Trim(" ", "/")
-    $localPath = Read-Host "ENTER LOCAL DIRECTORY LOCATION TO COPY"
+    $localPath = read-host "ENTER LOCAL DIRECTORY LOCATION TO COPY"
     $selectedLibraryFolder = ""
 
     $getDocumentLibraries = @()
@@ -667,14 +667,14 @@ function spoUploadDocumentItems {
     if ((Get-Item $localPath) -is [System.IO.DirectoryInfo]) {
         Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
 
-        Get-PnPList | Where-Object { $_.Hidden -eq $false -and $_.BaseTemplate -eq 101 -and $_.Title -ne "SiteCollectionDocuments" -and $_.Title -ne "Style Library" -and $_.Title -ne "FormServerTemplates" -and $_.Title -ne "Form Templates" } | foreach-object { $getDocumentLibraries += $_ }
+        Get-PnPList | where-object { $_.Hidden -eq $false -and $_.BaseTemplate -eq 101 -and $_.Title -ne "SiteCollectionDocuments" -and $_.Title -ne "Style Library" -and $_.Title -ne "FormServerTemplates" -and $_.Title -ne "Form Templates" } | foreach-object { $getDocumentLibraries += $_ }
 
         do {
             write-host "`nPLEASE SELECT A DOCUMENT LIBRARY`n"
             foreach ($documentLibrary in $getDocumentLibraries) {
                 write-host "`t$($getDocumentLibraries.IndexOf($documentLibrary)+1): PRESS $($getDocumentLibraries.IndexOf($documentLibrary)+1) for $($documentLibrary.Title)"
             }
-            $documentLibraryChoice = Read-Host "`nPLEASE MAKE A SELECTION"
+            $documentLibraryChoice = read-host "`nPLEASE MAKE A SELECTION"
         } while (-not($getDocumentLibraries[$documentLibraryChoice-1]))
 
         $selectedLibraryURLFolder = $getDocumentLibraries[$documentLibraryChoice-1].RootFolder.ServerRelativeUrl.replace($getDocumentLibraries[$documentLibraryChoice-1].ParentWebUrl,"")
@@ -689,10 +689,8 @@ function spoUploadDocumentItems {
                     write-host "$($selectedSubFolders.IndexOf($child)+1): PRESS $($selectedSubFolders.IndexOf($child)+1) for $($child.Name)"
                 }
                 write-host "S: PRESS S to Select Current Folder"
-                $folderChoice = Read-Host "`nPLEASE MAKE A SELECTION"
-            } else {
-                $folderChoice = "S"
-            }
+                $folderChoice = read-host "`nPLEASE MAKE A SELECTION"
+            } else { $folderChoice = "S" }
 
             if($folderChoice -ne "S") {
                 if(-not($selectedSubFolders[$folderChoice-1])) {
@@ -704,15 +702,15 @@ function spoUploadDocumentItems {
             }
         } while ($selectedLibraryFolder -eq "")
 
-        $Confirm = Read-Host "WOULD YOU LIKE TO UPLOAD DOCUMENTS TO THIS FOLDER: $($selectedLibraryFolder)? [Y] Yes [N] No"
+        $Confirm = read-host "WOULD YOU LIKE TO UPLOAD DOCUMENTS TO THIS FOLDER: $($selectedLibraryFolder)? [Y] Yes [N] No"
         if($Confirm -match "[yY]") {
-            Write-host "`nProcessing Folder: $($localPath)" -f Yellow
-            Resolve-PnPFolder -SiteRelativePath $selectedLibraryFolder | Out-Null    
+            write-host "`nProcessing Folder: $($localPath)" -f Yellow
+            Resolve-PnPFolder -SiteRelativePath $selectedLibraryFolder | out-null    
 
             $files = Get-ChildItem -Path $localPath -File
-            ForEach ($file in $files) {
-                Add-PnPFile -Path "$($file.Directory)\$($file.Name)" -Folder $selectedLibraryFolder -Values @{"Title" = $($file.Name)} | Out-Null
-                Write-host "`tUploaded File: $($file.FullName)" -f Green
+            foreach ($file in $files) {
+                Add-PnPFile -Path "$($file.Directory)\$($file.Name)" -Folder $selectedLibraryFolder -Values @{"Title" = $($file.Name)} | out-null
+                write-host "`tUploaded File: $($file.FullName)" -f Green
 
                 $results = New-Object PSObject -Property @{
                     Type = "File"
@@ -722,11 +720,11 @@ function spoUploadDocumentItems {
                 reportCreate -reportPath "$($setupReportPath)\$($reportName)" -reportData $results
             }
 
-            Get-ChildItem -Path $localPath -Recurse -Directory | ForEach-Object {
+            Get-ChildItem -Path $localPath -Recurse -Directory | foreach-object {
                 $folderToUpload = ($selectedLibraryFolder+$_.FullName.Replace($localPath,"")).Replace("\","/")
 
-                Write-host "Processing Folder: $($_.FullName)" -ForegroundColor Yellow
-                Resolve-PnPFolder -SiteRelativePath $folderToUpload | Out-Null
+                write-host "Processing Folder: $($_.FullName)" -ForegroundColor Yellow
+                Resolve-PnPFolder -SiteRelativePath $folderToUpload | out-null
 
                 $results = New-Object PSObject -Property @{
                     Type = "Folder"
@@ -736,9 +734,9 @@ function spoUploadDocumentItems {
                 reportCreate -reportPath "$($setupReportPath)\$($reportName)" -reportData $results
 
                 $files = Get-ChildItem -Path $_.FullName -File
-                ForEach ($file in $files) {
-                    Add-PnPFile -Path "$($file.Directory)\$($file.Name)" -Folder $folderToUpload -Values @{"Title" = $($file.Name)} | Out-Null
-                    Write-host "`tUploaded File: $($file.FullName)" -ForegroundColor Green
+                foreach ($file in $files) {
+                    Add-PnPFile -Path "$($file.Directory)\$($file.Name)" -Folder $folderToUpload -Values @{"Title" = $($file.Name)} | out-null
+                    write-host "`tUploaded File: $($file.FullName)" -ForegroundColor Green
 
                     $results = New-Object PSObject -Property @{
                         Type = "File"
@@ -760,42 +758,30 @@ function spoUploadDocumentItems {
 #endregion
 
 #region MAIN
+$global:wordDirtySearch = $null;
+
 $setupPath = "C:\users\$env:USERNAME\Documents\SOPA"
 $setupReportPath = $setupPath + "\Reports"
 $setupDirtyWordsPath = $setupPath + "\DirtyWords"
 $setupDirtyWordsFilePath = $setupDirtyWordsPath + "\DirtyWords.csv"
 
-$global:wordDirtySearch = $null;
-
 showSetup -SetupPath $setupPath -ReportPath $setupReportPath -DirtyWordsPath $setupDirtyWordsPath -DirtyWordsFilePath $setupDirtyWordsFilePath
 do {
     showMenu
-    $menuMain = Read-Host "PLEASE MAKE A SELECTION"
+    $menuMain = read-host "PLEASE MAKE A SELECTION"
     switch ($menuMain) {
         #region SITE TOOLS
         "1" {
             do {
                 showSiteTools
-                $menuSub = Read-Host "PLEASE MAKE A SELECTION"
+                $menuSub = read-host "PLEASE MAKE A SELECTION"
                 switch ($menuSub) {
-                    "1" {
-                        spoSiteMap -reportPath $setupReportPath -reportName "SPOSITEMAP_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
-                    }
-                    "2" {
-                        spoScanPII -reportPath $setupReportPath -reportName "SPOSCANPII_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
-                    }
-                    "3" {
-                        spoGetSiteCollectionAdmins -reportPath $setupReportPath -reportName "SPOGETSITECOLLECTIONADMINS_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
-                    }
-                    "4" {
-                        spoAddSiteCollectionAdmin -reportPath $setupReportPath -reportName "SPOADDSITECOLLECTIONADMIN_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
-                    }
-                    "5" {
-                        spoDeleteSiteCollectionAdmin -reportPath $setupReportPath -reportName "SPODELETESITECOLLECTIONADMIN_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
-                    }
-                    "6" {
-                        spoGetSiteCollectionGroups -reportPath $setupReportPath -reportName "SPOGETSITECOLLECTIONGROUPS_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
-                    }
+                    "1" { spoSiteMap -reportPath $setupReportPath -reportName "SPOSITEMAP_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv" }
+                    "2" { spoScanPII -reportPath $setupReportPath -reportName "SPOSCANPII_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv" }
+                    "3" { spoGetSiteCollectionAdmins -reportPath $setupReportPath -reportName "SPOGETSITECOLLECTIONADMINS_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv" }
+                    "4" { spoAddSiteCollectionAdmin -reportPath $setupReportPath -reportName "SPOADDSITECOLLECTIONADMIN_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv" }
+                    "5" { spoDeleteSiteCollectionAdmin -reportPath $setupReportPath -reportName "SPODELETESITECOLLECTIONADMIN_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv" }
+                    "6" { spoGetSiteCollectionGroups -reportPath $setupReportPath -reportName "SPOGETSITECOLLECTIONGROUPS_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv" }
                 }
             } until ($menuSub -eq "e")
         }
@@ -805,14 +791,11 @@ do {
         "2" {
             do {
                 showUserTools
-                $menuSub = Read-Host "PLEASE MAKE A SELECTION"
+                $menuSub = read-host "PLEASE MAKE A SELECTION"
                 switch ($menuSub) {
-                    "1" {
-                        spoDeleteUser -reportPath $setupReportPath -reportName "DELETEUSER_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
+                    "1" { spoDeleteUser -reportPath $setupReportPath -reportName "DELETEUSER_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
                     }
-                    "2" {
-                        spoDeleteUserGroups -reportPath $setupReportPath -reportName "DELETEUSERGROUPS_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
-                    }
+                    "2" { spoDeleteUserGroups -reportPath $setupReportPath -reportName "DELETEUSERGROUPS_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv" }
                 }
             } until ($menuSub -eq "e")
         }
@@ -822,13 +805,11 @@ do {
         "3" {
             do {
                 showListTools
-                $menuSub = Read-Host "PLEASE MAKE A SELECTION"
+                $menuSub = read-host "PLEASE MAKE A SELECTION"
                 switch ($menuSub) {
-                    "1" {
-                        spoShowList -reportPath $setupReportPath -reportName "SHOWLIST_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
+                    "1" { spoShowList -reportPath $setupReportPath -reportName "SHOWLIST_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
                     }
-                    "2" {
-                        spoHideList -reportPath $setupReportPath -reportName "HIDELIST_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
+                    "2" { spoHideList -reportPath $setupReportPath -reportName "HIDELIST_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
                     }
                 }
             } until ($menuSub -eq "e")
@@ -839,11 +820,9 @@ do {
         "4" {
             do {
                 showCustomListTools
-                $menuSub = Read-Host "PLEASE MAKE A SELECTION"
+                $menuSub = read-host "PLEASE MAKE A SELECTION"
                 switch ($menuSub) {
-                    "1" {
-                        spoDeleteAllListItems -reportPath $setupReportPath -reportName "DELETEDLISTITEMS_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
-                    }
+                    "1" { spoDeleteAllListItems -reportPath $setupReportPath -reportName "DELETEDLISTITEMS_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv" }
                 }
             } until ($menuSub -eq "e")
         }
@@ -853,11 +832,9 @@ do {
         "5" {
             do {
                 showDocumentTools
-                $menuSub = Read-Host "PLEASE MAKE A SELECTION"
+                $menuSub = read-host "PLEASE MAKE A SELECTION"
                 switch ($menuSub) {
-                    "1" {
-                        spoUploadDocumentItems -reportPath $setupReportPath -reportName "UPLOADDOCUMENTITEMS_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
-                    }
+                    "1" { spoUploadDocumentItems -reportPath $setupReportPath -reportName "UPLOADDOCUMENTITEMS_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv" }
                 }
             } until ($menuSub -eq "e")
         }
@@ -867,14 +844,10 @@ do {
         "s" {
             do {
                 showSettings
-                $menuSub = Read-Host "PLEASE MAKE A SELECTION"
+                $menuSub = read-host "PLEASE MAKE A SELECTION"
                 switch ($menuSub) {
-                    "1" {
-                        start $setupPath
-                    }
-                    "2" {
-                        start $setupDirtyWordsFilePath
-                    }
+                    "1" { start $setupPath }
+                    "2" { start $setupDirtyWordsFilePath }
                 }
             } until ($menuSub -eq "e")
             showSetup -SetupPath $setupPath -ReportPath $setupReportPath -DirtyWordsPath $setupDirtyWordsPath -DirtyWordsFilePath $setupDirtyWordsFilePath
