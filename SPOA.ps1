@@ -30,6 +30,17 @@ Function Format-FileSize() { # https://community.spiceworks.com/topic/1955251-po
     Else {""}
 }
 
+function reportCreate {
+    param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportPath,
+          [Parameter(Mandatory)][object[]]$reportData)
+
+    if (test-path $reportPath) {
+        $reportData | Export-Csv -Path $reportPath -Force -NoTypeInformation -Append
+    } else {
+        $reportData | Export-Csv -Path $reportPath -Force -NoTypeInformation
+    }
+}
+
 #region SETUP FUNCTIONS
 function showSetup {
     param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$SetupPath,
@@ -87,62 +98,33 @@ function showMenu {
 #        WELCOME TO THE SHAREPOINT ONLINE ASSISTANT       #
 #                                                         #
 ###########################################################`n
-###########################################################
-#                                                         #
-#                        MAIN MENU                        #
-#                                                         #
-#             WHICH TOOL WOULD YOU LIKE TO USE?           #
-#                                                         #
-###########################################################`n
-###########################################################
-#                                                         #
-# 1: PRESS '1' FOR SITE TOOLS.                            #
-# 2: PRESS '2' FOR USER TOOLS.                            #
-# 3: PRESS '3' FOR LIST TOOLS.                            #
-# PRESS 'S' FOR SETTINGS OR 'Q' TO QUIT                   #
-#                                                         #
-###########################################################`n"
+MAIN MENU -- SELECT A CATEGORY`n
+`t1: PRESS '1' FOR SITE TOOLS.
+`t2: PRESS '2' FOR USER TOOLS.
+`t3: PRESS '3' FOR LIST TOOLS.
+`t4: PRESS '4' FOR CUSTOM LIST TOOLS.
+`t5: PRESS '5' FOR DOCUMENT TOOLS.
+`tPRESS 'S' FOR SETTINGS OR 'Q' TO QUIT`n"
 }
 
 function showSettings {   
-    Write-Host "
-###########################################################
-#                                                         #
-#                        SETTINGS                         #
-#                                                         #
-#                  PLEASE SELECT A SETTING                #
-#                                                         #
-###########################################################`n
-###########################################################
-#                                                         #
-# 1: PRESS '1' TO OPEN SPOA FOLDER                        #
-# 2: PRESS '2' TO OPEN THE DIRTY WORD LIST.               #
-# Q: PRESS 'E' TO EXIT BACK TO THE MAIN MENU.             #
-#                                                         #
-###########################################################`n"
+    Write-Host "`nSETTINGS -- SELECT AN OPTION`n
+`t1: PRESS '1' TO OPEN SPOA FOLDER.
+`t2: PRESS '2' TO OPEN THE DIRTY WORD LIST.
+`tE: PRESS 'E' TO EXIT BACK TO THE MAIN MENU.`n"
 }
 #endregion
 
 #region SITE TOOLS FUNCTIONS
 function showSiteTools {   
-    Write-Host "
-###########################################################
-#                                                         #
-#                       SITE TOOLS                        #
-#                                                         #
-#                   PLEASE SELECT A TOOL                  #
-#                                                         #
-###########################################################`n
-###########################################################
-#                                                         #
-# 1: PRESS '1' FOR SITE MAP REPORT.                       #
-# 2: PRESS '2' FOR PII SCAN REPORT.                       #
-# 3: PRESS '3' FOR SITE COLLECTION ADMIN REPORT.          #
-# 4: PRESS '4' FOR SITE COLLECTION ADMIN DELETE.          #
-# 5: PRESS '5' FOR SITE COLLECTION GROUP REPORT.          #
-# E: PRESS 'E' TO EXIT BACK TO THE MAIN MENU.             #
-#                                                         #
-###########################################################`n"
+    Write-Host "`nSITE TOOLS -- SELECT AN OPTION`n
+`t1: PRESS '1' FOR SITE MAP REPORT.
+`t2: PRESS '2' FOR PII SCAN REPORT.
+`t3: PRESS '3' FOR SITE COLLECTION ADMIN REPORT.
+`t4: PRESS '4' FOR ADD A SITE COLLECTION ADMIN.
+`t4: PRESS '5' FOR DELETE A SITE COLLECTION ADMIN.
+`t5: PRESS '6' FOR SITE COLLECTION GROUP REPORT.
+`tE: PRESS 'E' TO EXIT BACK TO THE MAIN MENU.`n"
 }
 
 # OPTION "1"
@@ -150,7 +132,7 @@ function spoSiteMap {
     param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportPath,
           [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
 
-    $sitePath = Read-Host "ENTER SITE COLLECTION URL"
+    $sitePath = Read-Host "`nENTER SITE COLLECTION URL"
     $results = @()
 
     Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
@@ -175,12 +157,7 @@ function spoSiteMap {
         Description = $siteInfo.Description
         Created = $siteInfo.Created
     }
-
-    if (test-path "$($reportPath)\$($reportName)") {
-        $results | Select-Object "Title", "ServerRelativeUrl", "ListCount", "ItemCount", "Created", "Description" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation -Append
-    } else {
-        $results | Select-Object "Title", "ServerRelativeUrl", "ListCount", "ItemCount", "Created", "Description" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation
-    }
+    reportCreate -reportPath "$($setupReportPath)\$($reportName)" -reportData $results
 
     foreach ($site in $subSites) {
         Connect-PnPOnline -Url $site.Url -UseWebLogin -WarningAction SilentlyContinue
@@ -203,12 +180,7 @@ function spoSiteMap {
             Description = $site.Description
             Created = $site.Created
         }
-
-        if (test-path "$($reportPath)\$($reportName)") {
-            $results | Select-Object "Title", "ServerRelativeUrl", "ListCount", "ItemCount", "Created", "Description" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation -Append
-        } else {
-            $results | Select-Object "Title", "ServerRelativeUrl", "ListCount", "ItemCount", "Created", "Description" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation
-        }
+        reportCreate -reportPath "$($setupReportPath)\$($reportName)" -reportData $results
     }
 
     # GET TOTAL COUNTS
@@ -220,14 +192,9 @@ function spoSiteMap {
         Description = ""
         Created = ""
     }
+    reportCreate -reportPath "$($setupReportPath)\$($reportName)" -reportData $results
 
-    if (test-path "$($reportPath)\$($reportName)") {
-        $results | Select-Object "Title", "ServerRelativeUrl", "ListCount", "ItemCount", "Created", "Description" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation -Append
-    } else {
-        $results | Select-Object "Title", "ServerRelativeUrl", "ListCount", "ItemCount", "Created", "Description" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation
-    }
     Disconnect-PnPOnline
-
     Write-Host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; Write-Host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
     Write-Host "Report Saved: " -ForegroundColor DarkYellow -nonewline; Write-Host "$($reportPath)\$($reportName)" -ForegroundColor White;
 }
@@ -237,11 +204,10 @@ function spoScanPII {
     param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportPath,
           [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
 
-    $sitePath = Read-Host "ENTER SITE COLLECTION URL"
-    $siteParentOnly = $null 
+    $sitePath = Read-Host "`nENTER SITE COLLECTION URL"
     $results = @()
 
-    $Confirm = Read-Host "WOULD YOU LIKE TO SCAN ALL SUB-SITES? [Y] Yes [N] No"
+    $Confirm = Read-Host "`nWOULD YOU LIKE TO SCAN ALL SUB-SITES? [Y] Yes [N] No"
     if($Confirm -match "[yY]") {
         $siteParentOnly = $false
     } else {
@@ -285,12 +251,7 @@ function spoScanPII {
                             Created = $_["Created"]
                             Modified = $_["Modified"]
                         }
-
-                        if (test-path "$($reportPath)\$($reportName)") {
-                            $results | Select-Object "FileName", "FileExtension", "FileSize", "Path", "Permissions", "Criteria", "Created", "Modified" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation -Append
-                        } else {
-                            $results | Select-Object "FileName", "FileExtension", "FileSize", "Path", "Permissions", "Criteria", "Created", "Modified" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation
-                        }
+                        reportCreate -reportPath "$($setupReportPath)\$($reportName)" -reportData $results
                     }
                 }
             }
@@ -338,12 +299,7 @@ function spoScanPII {
                                     Created = $_["Created"]
                                     Modified = $_["Modified"]
                                 }
-
-                                if (test-path "$($reportPath)\$($reportName)") {
-                                    $results | Select-Object "FileName", "FileExtension", "FileSize", "Path", "Permissions", "Criteria", "Created", "Modified" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation -Append
-                                } else {
-                                    $results | Select-Object "FileName", "FileExtension", "FileSize", "Path", "Permissions", "Criteria", "Created", "Modified" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation
-                                }
+                                reportCreate -reportPath "$($setupReportPath)\$($reportName)" -reportData $results
                             }
                         }
                     }
@@ -351,8 +307,8 @@ function spoScanPII {
             }
         }
     }
-    Disconnect-PnPOnline
 
+    Disconnect-PnPOnline
     Write-Host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; Write-Host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
     Write-Host "Report Saved: " -ForegroundColor DarkYellow -nonewline; Write-Host "$($reportPath)\$($reportName)" -ForegroundColor White;
 }
@@ -361,65 +317,91 @@ function spoScanPII {
 function spoGetSiteCollectionAdmins {
     param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportPath,
           [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
-
-    $sitePath = Read-Host "ENTER SITE COLLECTION URL"
+    
+    $results = @()
+    $sitePath = Read-Host "`nENTER SITE COLLECTION URL"
     Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
 
-    Get-PnPSiteCollectionAdmin | Select-Object "Id", "Title", "Email", "LoginName", "IsSiteAdmin", "IsShareByEmailGuestUser", "IsHiddenInUI", "PrincipalType" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation
+    Get-PnPSiteCollectionAdmin | Foreach-Object {
+        $results = New-Object PSObject -Property @{
+            Id = $_.Id
+            Title = $_.Title
+            Email = $_.Email
+            LoginName = $_.LoginName
+            IsSiteAdmin = $_IsSiteAdmin
+            IsShareByEmailGuestUser = $_.IsShareByEmailGuestUser
+            IsHiddenInUI = $_.IsHiddenInUI
+            PrincipalType = $_.PrincipalType
+        }
+        reportCreate -reportPath "$($setupReportPath)\$($reportName)" -reportData $results
+    }
 
     Disconnect-PnPOnline
-
     Write-Host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; Write-Host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
     Write-Host "Report Saved: " -ForegroundColor DarkYellow -nonewline; Write-Host "$($reportPath)\$($reportName)" -ForegroundColor White;
 }
 
 # OPTION "4"
-function spoDeleteSiteCollectionAdmin {
+function spoAddSiteCollectionAdmin {
     param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportPath,
           [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
-
-    $sitePath = Read-Host "ENTER SITE COLLECTION URL"
+    
     $results = @()
+    $sitePath = Read-Host "`nENTER SITE COLLECTION URL"
+    $newAdmin = Read-Host "`nENTER NEW SITE COLLECTION ADMIN EMAIL"
     
     Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
-    $getAdmins = @()
-
-    Get-PnPSiteCollectionAdmin | ForEach-Object { $getAdmins += $_.Title }
-
-    do {
-        Write-Host "
-###########################################################
-#                                                         #
-#                  PLEASE SELECT AN ADMIN                 #
-#                                                         #
-###########################################################`n"
-        foreach ($admin in $getAdmins) {
-            Write-Host "$($getAdmins.IndexOf($admin)+1): PRESS $($getAdmins.IndexOf($admin)+1) for $($admin)"
-        }
-        $adminChoice = Read-Host "PLEASE MAKE A SELECTION"
-    } while (-not($getAdmins[$adminChoice-1]))
-
-    Remove-PnPSiteCollectionAdmin -Owners $getAdmins[$adminChoice-1]
+    Add-PnPSiteCollectionAdmin -Owners $newAdmin
 
     $results = New-Object PSObject -Property @{
-        AdminDeleted = $getAdmins[$adminChoice-1]
+        AdminNew = $newAdmin
     }
+    reportCreate -reportPath "$($setupReportPath)\$($reportName)" -reportData $results
 
-    if (-not(test-path "$($reportPath)\$($reportName)")) {
-        $results | Select-Object "AdminDeleted" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation
-    }
     Disconnect-PnPOnline
-
     Write-Host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; Write-Host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
     Write-Host "Report Saved: " -ForegroundColor DarkYellow -nonewline; Write-Host "$($reportPath)\$($reportName)" -ForegroundColor White;
 }
 
 # OPTION "5"
+function spoDeleteSiteCollectionAdmin {
+    param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportPath,
+          [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
+    
+    $results = @()
+    $sitePath = Read-Host "`nENTER SITE COLLECTION URL"
+    
+    Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
+
+    $getAdmins = @()
+    Get-PnPSiteCollectionAdmin | foreach-object { $getAdmins += $_ }
+
+    do {
+        Write-Host "`nPLEASE SELECT AN ADMIN`n"
+        foreach ($admin in $getAdmins) {
+            Write-Host "`t$($getAdmins.IndexOf($admin)+1): PRESS $($getAdmins.IndexOf($admin)+1) for $($admin.Title)"
+        }
+        $adminChoice = Read-Host "PLEASE MAKE A SELECTION"
+    } while (-not($getAdmins[$adminChoice-1]))
+
+    Remove-PnPSiteCollectionAdmin -Owners $getAdmins[$adminChoice-1].Title
+
+    $results = New-Object PSObject -Property @{
+        AdminDeleted = $getAdmins[$adminChoice-1].Title
+    }
+    reportCreate -reportPath "$($setupReportPath)\$($reportName)" -reportData $results
+
+    Disconnect-PnPOnline
+    Write-Host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; Write-Host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
+    Write-Host "Report Saved: " -ForegroundColor DarkYellow -nonewline; Write-Host "$($reportPath)\$($reportName)" -ForegroundColor White;
+}
+
+# OPTION "6"
 function spoGetSiteCollectionGroups {
     param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportPath,
           [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
 
-    $sitePath = Read-Host "ENTER SITE COLLECTION URL"
+    $sitePath = Read-Host "`nENTER SITE COLLECTION URL"
     $results = @()
 
     Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
@@ -437,16 +419,10 @@ function spoGetSiteCollectionGroups {
             OwnerTitle = $_.OwnerTitle
             Members = $members
         }
-
-        if (test-path "$($reportPath)\$($reportName)") {
-            $results | Select-Object "ID", "GroupName", "LoginName", "OwnerTitle", "Members" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation -Append
-        } else {
-            $results | Select-Object "ID", "GroupName", "LoginName", "OwnerTitle", "Members" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation
-        }
+        reportCreate -reportPath "$($setupReportPath)\$($reportName)" -reportData $results
     }
 
     Disconnect-PnPOnline
-
     Write-Host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; Write-Host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
     Write-Host "Report Saved: " -ForegroundColor DarkYellow -nonewline; Write-Host "$($reportPath)\$($reportName)" -ForegroundColor White;
 }
@@ -454,21 +430,10 @@ function spoGetSiteCollectionGroups {
 
 #region USER TOOLS FUNCTIONS
 function showUserTools {   
-    Write-Host "
-###########################################################
-#                                                         #
-#                       USER TOOLS                        #
-#                                                         #
-#                   PLEASE SELECT A TOOL                  #
-#                                                         #
-###########################################################`n
-###########################################################
-#                                                         #
-# 1: PRESS '1' FOR USER DELETION.                         #
-# 1: PRESS '2' FOR ALL ASSIGNED USER GROUP DELETION.      #
-# Q: PRESS 'E' TO EXIT BACK TO THE MAIN MENU.             #
-#                                                         #
-###########################################################`n"
+    Write-Host "`nUSER TOOLS -- SELECT AN OPTION`n
+`t1: PRESS '1' FOR USER DELETION.
+`t2: PRESS '2' FOR ALL ASSIGNED USER GROUP DELETION.
+`tE: PRESS 'E' TO EXIT BACK TO THE MAIN MENU.`n"
 }
 
 # OPTION "1"
@@ -476,31 +441,23 @@ function spoDeleteUser {
     param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportPath,
           [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
 
-    $sitePath = Read-Host "ENTER SITE COLLECTION URL"
-    $userEmail = Read-Host "ENTER USERS EMAIL"
+    $sitePath = Read-Host "`nENTER SITE COLLECTION URL"
+    $userEmail = Read-Host "`nENTER USERS EMAIL"
     $results = @()
 
     Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
     $userInformation = Get-PnPUser | ? Email -eq $userEmail | ForEach-Object { 
-        Write-Host "User Deleted: $($_.Title)" -ForegroundColor Yellow
-
         Remove-PnPUser -Identity $_.Title -Force
+        Write-Host "User Deleted: $($_.Title)" -ForegroundColor Yellow
 
         $results = New-Object PSObject -Property @{
             UserDeleted = $_.Title
             UserEmail = $_.Email
         }
-
-        if (test-path "$($reportPath)\$($reportName)") {
-            $results | Select-Object "UserDeleted", "UserEmail" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation -Append
-        } else {
-            $results | Select-Object "UserDeleted", "UserEmail" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation
-        }
-    
-    
+        reportCreate -reportPath "$($setupReportPath)\$($reportName)" -reportData $results
     }
-    Disconnect-PnPOnline
 
+    Disconnect-PnPOnline
     Write-Host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; Write-Host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
     Write-Host "Report Saved: " -ForegroundColor DarkYellow -nonewline; Write-Host "$($reportPath)\$($reportName)" -ForegroundColor White;
 }
@@ -510,8 +467,8 @@ function spoDeleteUserGroups {
     param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportPath,
           [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
 
-    $sitePath = Read-Host "ENTER SITE COLLECTION URL"
-    $userEmail = Read-Host "ENTER USERS EMAIL"
+    $sitePath = Read-Host "`nENTER SITE COLLECTION URL"
+    $userEmail = Read-Host "`nENTER USERS EMAIL"
     $results = @()
 
     Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
@@ -525,15 +482,10 @@ function spoDeleteUserGroups {
             UserDisplay = $userInformation
             UserGroup = $_.Title
         }
-
-        if (test-path "$($reportPath)\$($reportName)") {
-            $results | Select-Object "UserDisplay", "UserGroup" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation -Append
-        } else {
-            $results | Select-Object "UserDisplay", "UserGroup" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation
-        }
+        reportCreate -reportPath "$($setupReportPath)\$($reportName)" -reportData $results
     }
-    Disconnect-PnPOnline
 
+    Disconnect-PnPOnline
     Write-Host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; Write-Host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
     Write-Host "Report Saved: " -ForegroundColor DarkYellow -nonewline; Write-Host "$($reportPath)\$($reportName)" -ForegroundColor White;
 }
@@ -541,20 +493,92 @@ function spoDeleteUserGroups {
 
 #region LIST TOOLS FUNCTIONS
 function showListTools {   
-    Write-Host "
-###########################################################
-#                                                         #
-#                       LIST TOOLS                        #
-#                                                         #
-#                  PLEASE SELECT A SETTING                #
-#                                                         #
-###########################################################`n
-###########################################################
-#                                                         #
-# 1: PRESS '1' DELETE ALL LIST ITEMS.                     #
-# Q: PRESS 'E' TO EXIT BACK TO THE MAIN MENU.             #
-#                                                         #
-###########################################################`n"
+    Write-Host "`nCUSTOM LIST TOOLS -- SELECT AN OPTION`n
+`t1: PRESS '1' SHOW LIST IN BROWSER.
+`t2: PRESS '2' HIDE LIST FROM BROWSER.
+`tE: PRESS 'E' TO EXIT BACK TO THE MAIN MENU.`n"
+}
+
+# OPTION "1"
+function spoShowList {
+    param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportPath,
+          [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
+
+    $sitePath = Read-Host "`nENTER SITE URL THAT LIST RESIDES ON"
+    $results = @()
+    
+    Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
+
+    $listsGet = @()
+    Get-PnPList | Where-Object { $_.Hidden -eq $true -and ($_.BaseTemplate -eq 100 -or $_.BaseTemplate -eq 101 -or $_.BaseTemplate -eq 102 -or $_.BaseTemplate -eq 103 -or $_.BaseTemplate -eq 104 -or $_.BaseTemplate -eq 105 -or $_.BaseTemplate -eq 106 -or $_.BaseTemplate -eq 107 -or $_.BaseTemplate -eq 108 -or $_.BaseTemplate -eq 109) } | ForEach-Object { $listsGet += $_ }
+
+    if ($listsGet.count) {
+        do {
+            Write-Host "`nPLEASE SELECT A LIST`n"
+            foreach ($list in $listsGet) {
+                Write-Host "`t$($listsGet.IndexOf($list)+1): PRESS $($listsGet.IndexOf($list)+1) for $($list.Title)"
+            }
+            $listChoice = Read-Host "`nPLEASE MAKE A SELECTION"
+        } while (-not($listsGet[$listChoice-1]))
+
+        Set-PnPList -Identity $listsGet[$listChoice-1].Title -Hidden $false
+
+        $results = New-Object PSObject -Property @{
+            ShowList = $listsGet[$listChoice-1].Title
+        }
+        reportCreate -reportPath "$($setupReportPath)\$($reportName)" -reportData $results
+
+        Disconnect-PnPOnline
+        Write-Host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; Write-Host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
+        Write-Host "Report Saved: " -ForegroundColor DarkYellow -nonewline; Write-Host "$($reportPath)\$($reportName)" -ForegroundColor White;
+    } else {
+        Write-Host "`nNO LISTS ARE HIDDEN." -ForegroundColor Red
+    }
+}
+
+# OPTION "2"
+function spoHideList {
+    param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportPath,
+          [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
+
+    $sitePath = Read-Host "`nENTER SITE URL THAT LIST RESIDES ON"
+    $results = @()
+    
+    Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
+
+    $listsGet = @()
+    Get-PnPList | Where-Object { $_.Hidden -eq $false } | ForEach-Object { $listsGet += $_ }
+
+    if ($listsGet.count) {
+        do {
+            Write-Host "`nPLEASE SELECT A LIST`n"
+            foreach ($list in $listsGet) {
+                Write-Host "`t$($listsGet.IndexOf($list)+1): PRESS $($listsGet.IndexOf($list)+1) for $($list.Title)"
+            }
+            $listChoice = Read-Host "`nPLEASE MAKE A SELECTION"
+        } while (-not($listsGet[$listChoice-1]))
+
+        Set-PnPList -Identity $listsGet[$listChoice-1].Title -Hidden $true
+
+        $results = New-Object PSObject -Property @{
+            HideList = $listsGet[$listChoice-1].Title
+        }
+        reportCreate -reportPath "$($setupReportPath)\$($reportName)" -reportData $results
+
+        Disconnect-PnPOnline
+        Write-Host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; Write-Host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
+        Write-Host "Report Saved: " -ForegroundColor DarkYellow -nonewline; Write-Host "$($reportPath)\$($reportName)" -ForegroundColor White;
+    } else {
+        Write-Host "`nNO LISTS ARE HIDDEN." -ForegroundColor Red
+    }
+}
+#endregion
+
+#region CUSTOM LIST TOOLS FUNCTIONS
+function showCustomListTools {   
+    Write-Host "`nCUSTOM LIST TOOLS -- SELECT AN OPTION`n
+`t1: PRESS '1' DELETE ALL LIST ITEMS.
+`tE: PRESS 'E' TO EXIT BACK TO THE MAIN MENU.`n"
 }
 
 # OPTION "1"
@@ -562,50 +586,153 @@ function spoDeleteAllListItems {
     param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportPath,
           [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
 
-    $sitePath = Read-Host "ENTER SITE URL THAT LIST RESIDES ON"
+    $sitePath = Read-Host "`nENTER SITE URL THAT LIST RESIDES ON"
     $results = @()
     
-
     Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
     $listsGet = @()
 
-    Get-PnPList | Where-Object { $_.Hidden -eq $false -and $_.BaseTemplate -eq 100 } | ForEach-Object { $listsGet += ($_.Title) }
+    Get-PnPList | Where-Object { $_.Hidden -eq $false -and $_.BaseTemplate -eq 100 } | ForEach-Object { $listsGet += ($_) }
 
     do {
-        Write-Host "
-###########################################################
-#                                                         #
-#                   PLEASE SELECT A LIST                  #
-#                                                         #
-###########################################################`n"
+        Write-Host "`nPLEASE SELECT A LIST`n"
         foreach ($list in $listsGet) {
-            Write-Host "$($listsGet.IndexOf($list)+1): PRESS $($listsGet.IndexOf($list)+1) for $($list)"
+            Write-Host "`t$($listsGet.IndexOf($list)+1): PRESS $($listsGet.IndexOf($list)+1) for $($list.Title)"
         }
-        $listChoice = Read-Host "PLEASE MAKE A SELECTION"
+        $listChoice = Read-Host "`nPLEASE MAKE A SELECTION"
     } while (-not($listsGet[$listChoice-1]))
 
-    $listItems =  Get-PnPListItem -List $listsGet[$listChoice-1] -PageSize 500
+    $listItems =  Get-PnPListItem -List $listsGet[$listChoice-1].Title -PageSize 500
     $Batch = New-PnPBatch
     ForEach($item in $listItems) {    
-         Remove-PnPListItem -List $listsGet[$listChoice-1] -Identity $item.Id -Recycle -Batch $Batch
+         Remove-PnPListItem -List $listsGet[$listChoice-1].Title -Identity $item.Id -Recycle -Batch $Batch
 
          $results = New-Object PSObject -Property @{
-            ListName = $listsGet[$listChoice-1]
+            ListName = $listsGet[$listChoice-1].Title
             ItemDeletedID = $item.Id
         }
-
-        if (test-path "$($reportPath)\$($reportName)") {
-            $results | Select-Object "ListName", "ItemDeletedID" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation -Append
-        } else {
-            $results | Select-Object "ListName", "ItemDeletedID" | Export-Csv -Path "$($reportPath)\$($reportName)" -Force -NoTypeInformation
-        }
+        reportCreate -reportPath "$($setupReportPath)\$($reportName)" -reportData $results
     }
     Invoke-PnPBatch -Batch $Batch
 
     Disconnect-PnPOnline
-
     Write-Host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; Write-Host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
     Write-Host "Report Saved: " -ForegroundColor DarkYellow -nonewline; Write-Host "$($reportPath)\$($reportName)" -ForegroundColor White;
+}
+#endregion
+
+#region DOCUMENT TOOLS FUNCTIONS
+function showDocumentTools {   
+    Write-Host "`nDOCUMENT TOOLS -- SELECT AN OPTION`n
+`t1: PRESS '1' TRANSFER FOLDER TO DOCUMENT LIBRARY
+`tE: PRESS 'E' TO EXIT BACK TO THE MAIN MENU.`n"
+}
+
+# OPTION "1"
+function spoUploadDocumentItems {
+    param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportPath,
+          [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
+
+    $results = @()
+    $sitePath = Read-Host "ENTER SITE URL THAT DOCUMENT LIBRARY RESIDES ON"
+    $sitePath = $sitePath.Trim(" ", "/")
+    $localPath = Read-Host "ENTER LOCAL DIRECTORY LOCATION TO COPY"
+    $selectedLibraryFolder = ""
+
+    $getDocumentLibraries = @()
+    
+    if ((Get-Item $localPath) -is [System.IO.DirectoryInfo]) {
+        Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
+
+        Get-PnPList | Where-Object { $_.Hidden -eq $false -and $_.BaseTemplate -eq 101 -and $_.Title -ne "SiteCollectionDocuments" -and $_.Title -ne "Style Library" -and $_.Title -ne "FormServerTemplates" -and $_.Title -ne "Form Templates" } | foreach-object { $getDocumentLibraries += $_ }
+
+        do {
+            Write-Host "`nPLEASE SELECT A DOCUMENT LIBRARY`n"
+            foreach ($documentLibrary in $getDocumentLibraries) {
+                Write-Host "`t$($getDocumentLibraries.IndexOf($documentLibrary)+1): PRESS $($getDocumentLibraries.IndexOf($documentLibrary)+1) for $($documentLibrary.Title)"
+            }
+            $documentLibraryChoice = Read-Host "`nPLEASE MAKE A SELECTION"
+        } while (-not($getDocumentLibraries[$documentLibraryChoice-1]))
+
+        $selectedLibraryURLFolder = $getDocumentLibraries[$documentLibraryChoice-1].RootFolder.ServerRelativeUrl.replace($getDocumentLibraries[$documentLibraryChoice-1].ParentWebUrl,"")
+
+        do {
+            $selectedSubFolders = @()
+            Get-PnPFolderItem -FolderSiteRelativeUrl $selectedLibraryURLFolder -ItemType Folder | Where { $_.Name -ne "Forms" } | foreach-object { $selectedSubFolders += $_ }
+
+            if($selectedSubFolders.count) {
+                Write-Host "`nPLEASE SELECT A FOLDER TO COPY TO`n"
+                foreach ($child in $selectedSubFolders) {
+                    Write-Host "$($selectedSubFolders.IndexOf($child)+1): PRESS $($selectedSubFolders.IndexOf($child)+1) for $($child.Name)"
+                }
+                Write-Host "S: PRESS S to Select Current Folder"
+                $folderChoice = Read-Host "`nPLEASE MAKE A SELECTION"
+            } else {
+                $folderChoice = "S"
+            }
+
+            if($folderChoice -ne "S") {
+                if(-not($selectedSubFolders[$folderChoice-1])) {
+                } else {
+                    $selectedLibraryURLFolder += "/$($selectedSubFolders[$folderChoice-1].Name)"
+                }
+            } else {
+                $selectedLibraryFolder = $selectedLibraryURLFolder.Trim(" ", "/")
+            }
+        } while ($selectedLibraryFolder -eq "")
+
+        $Confirm = Read-Host "WOULD YOU LIKE TO UPLOAD DOCUMENTS TO THIS FOLDER: $($selectedLibraryFolder)? [Y] Yes [N] No"
+        if($Confirm -match "[yY]") {
+            Write-host "`nProcessing Folder: $($localPath)" -f Yellow
+            Resolve-PnPFolder -SiteRelativePath $selectedLibraryFolder | Out-Null    
+
+            $files = Get-ChildItem -Path $localPath -File
+            ForEach ($file in $files) {
+                Add-PnPFile -Path "$($file.Directory)\$($file.Name)" -Folder $selectedLibraryFolder -Values @{"Title" = $($file.Name)} | Out-Null
+                Write-host "`tUploaded File: $($file.FullName)" -f Green
+
+                $results = New-Object PSObject -Property @{
+                    Type = "File"
+                    OriginalLocation = $file.FullName
+                    NewLocation = "$($sitePath)/$selectedLibraryFolder/$($file.Name)"
+                }
+                reportCreate -reportPath "$($setupReportPath)\$($reportName)" -reportData $results
+            }
+
+            Get-ChildItem -Path $localPath -Recurse -Directory | ForEach-Object {
+                $folderToUpload = ($selectedLibraryFolder+$_.FullName.Replace($localPath,"")).Replace("\","/")
+
+                Write-host "Processing Folder: $($_.FullName)" -ForegroundColor Yellow
+                Resolve-PnPFolder -SiteRelativePath $folderToUpload | Out-Null
+
+                $results = New-Object PSObject -Property @{
+                    Type = "Folder"
+                    OriginalLocation = $_.FullName
+                    NewLocation = "$($sitePath)/$($folderToUpload)"
+                }
+                reportCreate -reportPath "$($setupReportPath)\$($reportName)" -reportData $results
+
+                $files = Get-ChildItem -Path $_.FullName -File
+                ForEach ($file in $files) {
+                    Add-PnPFile -Path "$($file.Directory)\$($file.Name)" -Folder $folderToUpload -Values @{"Title" = $($file.Name)} | Out-Null
+                    Write-host "`tUploaded File: $($file.FullName)" -ForegroundColor Green
+
+                    $results = New-Object PSObject -Property @{
+                        Type = "File"
+                        OriginalLocation = $file.FullName
+                        NewLocation = "$($sitePath)/$($folderToUpload)/$($file.Name)"
+                    }
+                    reportCreate -reportPath "$($setupReportPath)\$($reportName)" -reportData $results
+                }
+            }
+        }
+
+        Disconnect-PnPOnline
+        Write-Host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; Write-Host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
+        Write-Host "Report Saved: " -ForegroundColor DarkYellow -nonewline; Write-Host "$($reportPath)\$($reportName)" -ForegroundColor White;
+    } else {
+        Write-Host "`nPATH SUPPLIED WAS NOT A FOLDER! PLEASE CHECK YOUR LOCAL DIRECTORY PATH AND TRY AGAIN!" -ForegroundColor Red
+    }
 }
 #endregion
 
@@ -626,8 +753,8 @@ do {
         "1" {
             do {
                 showSiteTools
-                $menuSiteTools = Read-Host "PLEASE MAKE A SELECTION"
-                switch ($menuSiteTools) {
+                $menuSub = Read-Host "PLEASE MAKE A SELECTION"
+                switch ($menuSub) {
                     "1" {
                         spoSiteMap -reportPath $setupReportPath -reportName "SPOSITEMAP_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
                     }
@@ -635,16 +762,19 @@ do {
                         spoScanPII -reportPath $setupReportPath -reportName "SPOSCANPII_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
                     }
                     "3" {
-                        spoGetSiteCollectionAdmins -reportPath $setupReportPath -reportName "SPOSITECOLLECTIONADMINS_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
+                        spoGetSiteCollectionAdmins -reportPath $setupReportPath -reportName "SPOGETSITECOLLECTIONADMINS_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
                     }
                     "4" {
-                        spoDeleteSiteCollectionAdmin -reportPath $setupReportPath -reportName "SPOSITECOLLECTIONADMINDELETE_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
+                        spoAddSiteCollectionAdmin -reportPath $setupReportPath -reportName "SPOADDSITECOLLECTIONADMIN_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
                     }
                     "5" {
-                        spoGetSiteCollectionGroups -reportPath $setupReportPath -reportName "SPOSITECOLLECTIONGROUPS_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
+                        spoDeleteSiteCollectionAdmin -reportPath $setupReportPath -reportName "SPODELETESITECOLLECTIONADMIN_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
+                    }
+                    "6" {
+                        spoGetSiteCollectionGroups -reportPath $setupReportPath -reportName "SPOGETSITECOLLECTIONGROUPS_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
                     }
                 }
-            } until ($menuSiteTools -eq "e")
+            } until ($menuSub -eq "e")
         }
         #endregion
 
@@ -652,8 +782,8 @@ do {
         "2" {
             do {
                 showUserTools
-                $menuUserTools = Read-Host "PLEASE MAKE A SELECTION"
-                switch ($menuUserTools) {
+                $menuSub = Read-Host "PLEASE MAKE A SELECTION"
+                switch ($menuSub) {
                     "1" {
                         spoDeleteUser -reportPath $setupReportPath -reportName "DELETEUSER_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
                     }
@@ -661,7 +791,7 @@ do {
                         spoDeleteUserGroups -reportPath $setupReportPath -reportName "DELETEUSERGROUPS_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
                     }
                 }
-            } until ($menuUserTools -eq "e")
+            } until ($menuSub -eq "e")
         }
         #endregion
 
@@ -669,13 +799,44 @@ do {
         "3" {
             do {
                 showListTools
-                $menuUserTools = Read-Host "PLEASE MAKE A SELECTION"
-                switch ($menuUserTools) {
+                $menuSub = Read-Host "PLEASE MAKE A SELECTION"
+                switch ($menuSub) {
+                    "1" {
+                        spoShowList -reportPath $setupReportPath -reportName "SHOWLIST_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
+                    }
+                    "2" {
+                        spoHideList -reportPath $setupReportPath -reportName "HIDELIST_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
+                    }
+                }
+            } until ($menuSub -eq "e")
+        }
+        #endregion
+
+        #region CUSTOM LIST TOOLS
+        "4" {
+            do {
+                showCustomListTools
+                $menuSub = Read-Host "PLEASE MAKE A SELECTION"
+                switch ($menuSub) {
                     "1" {
                         spoDeleteAllListItems -reportPath $setupReportPath -reportName "DELETEDLISTITEMS_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
                     }
                 }
-            } until ($menuUserTools -eq "e")
+            } until ($menuSub -eq "e")
+        }
+        #endregion
+
+        #region DOCUMENT TOOLS
+        "5" {
+            do {
+                showDocumentTools
+                $menuSub = Read-Host "PLEASE MAKE A SELECTION"
+                switch ($menuSub) {
+                    "1" {
+                        spoUploadDocumentItems -reportPath $setupReportPath -reportName "UPLOADDOCUMENTITEMS_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
+                    }
+                }
+            } until ($menuSub -eq "e")
         }
         #endregion
 
@@ -683,8 +844,8 @@ do {
         "s" {
             do {
                 showSettings
-                $menuSettings = Read-Host "PLEASE MAKE A SELECTION"
-                switch ($menuSettings) {
+                $menuSub = Read-Host "PLEASE MAKE A SELECTION"
+                switch ($menuSub) {
                     "1" {
                         start $setupPath
                     }
@@ -692,7 +853,7 @@ do {
                         start $setupDirtyWordsFilePath
                     }
                 }
-            } until ($menuSettings -eq "e")
+            } until ($menuSub -eq "e")
             showSetup -SetupPath $setupPath -ReportPath $setupReportPath -DirtyWordsPath $setupDirtyWordsPath -DirtyWordsFilePath $setupDirtyWordsFilePath
         }
         #endregion
