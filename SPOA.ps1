@@ -20,6 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+#region FUNCTIONS
 Function Format-FileSize() { # https://community.spiceworks.com/topic/1955251-powershell-help
     Param ([int]$size)
     If ($size -gt 1TB) {[string]::Format("{0:0.00} TB", $size / 1TB)}
@@ -40,6 +41,7 @@ function reportCreate {
         $reportData | Export-Csv -Path $reportPath -Force -NoTypeInformation
     }
 }
+#endregion
 
 #region SETUP FUNCTIONS
 function showSetup {
@@ -85,20 +87,41 @@ function showSetup {
 
 #region MAIN AND SETTING MENU FUNCTIONS
 function showMenu {
-    Write-Host "
-###########################################################
-#                                                         #
-#             ░██████╗██████╗░░█████╗░░█████╗░            #
-#             ██╔════╝██╔══██╗██╔══██╗██╔══██╗            #
-#             ╚█████╗░██████╔╝██║░░██║███████║            #
-#             ░╚═══██╗██╔═══╝░██║░░██║██╔══██║            #
-#             ██████╔╝██║░░░░░╚█████╔╝██║░░██║            #
-#             ╚═════╝░╚═╝░░░░░░╚════╝░╚═╝░░╚═╝            #
-#                                                         #
-#        WELCOME TO THE SHAREPOINT ONLINE ASSISTANT       #
-#                                                         #
-###########################################################`n
-MAIN MENU -- SELECT A CATEGORY`n
+    write-host "###########################################################"
+    write-host "#                                                         #"
+    write-host "#          " -NoNewline
+    write-host "  ██████  ██▓███   ▒█████   ▄▄▄      " -ForegroundColor red -NoNewline
+    write-host "          #"
+    write-host "#          " -NoNewline
+    write-host "▒██    ▒ ▓██░  ██▒▒██▒  ██▒▒████▄    " -ForegroundColor red -NoNewline
+    write-host "          #"
+    write-host "#          " -NoNewline
+    write-host "░ ▓██▄   ▓██░ ██▓▒▒██░  ██▒▒██  ▀█▄  " -ForegroundColor red -NoNewline
+    write-host "          #"
+    write-host "#          " -NoNewline
+    write-host "  ▒   ██▒▒██▄█▓▒ ▒▒██   ██░░██▄▄▄▄██ " -ForegroundColor red -NoNewline
+    write-host "          #"
+    write-host "#          " -NoNewline
+    write-host "▒██████▒▒▒██▒ ░  ░░ ████▓▒░ ▓█   ▓██▒" -ForegroundColor red -NoNewline
+    write-host "          #"
+    write-host "#          " -NoNewline
+    write-host "▒ ▒▓▒ ▒ ░▒▓▒░ ░  ░░ ▒░▒░▒░  ▒▒   ▓▒█░" -ForegroundColor red -NoNewline
+    write-host "          #"
+    write-host "#          " -NoNewline
+    write-host "░ ░▒  ░ ░░▒ ░       ░ ▒ ▒░   ▒   ▒▒ ░" -ForegroundColor red -NoNewline
+    write-host "          #"
+    write-host "#          " -NoNewline
+    write-host "░  ░  ░  ░░       ░ ░ ░ ▒    ░   ▒   " -ForegroundColor red -NoNewline
+    write-host "          #"
+    write-host "#          " -NoNewline
+    write-host "      ░               ░ ░        ░  ░" -ForegroundColor red -NoNewline
+    write-host "          #"
+    write-host "#                                                         #"
+    write-host "#     WELCOME TO THE SHAREPOINT ONLINE ASSISTANT TOOL     #"
+    write-host "#                                                         #"
+    write-host "###########################################################"
+
+    write-host "`nMAIN MENU -- SELECT A CATEGORY`n
 `t1: PRESS '1' FOR SITE TOOLS.
 `t2: PRESS '2' FOR USER TOOLS.
 `t3: PRESS '3' FOR LIST TOOLS.
@@ -108,7 +131,7 @@ MAIN MENU -- SELECT A CATEGORY`n
 }
 
 function showSettings {   
-    Write-Host "`nSETTINGS -- SELECT AN OPTION`n
+    write-host "`nSETTINGS -- SELECT AN OPTION`n
 `t1: PRESS '1' TO OPEN SPOA FOLDER.
 `t2: PRESS '2' TO OPEN THE DIRTY WORD LIST.
 `tE: PRESS 'E' TO EXIT BACK TO THE MAIN MENU.`n"
@@ -117,7 +140,7 @@ function showSettings {
 
 #region SITE TOOLS FUNCTIONS
 function showSiteTools {   
-    Write-Host "`nSITE TOOLS -- SELECT AN OPTION`n
+    write-host "`nSITE TOOLS -- SELECT AN OPTION`n
 `t1: PRESS '1' FOR SITE MAP REPORT.
 `t2: PRESS '2' FOR PII SCAN REPORT.
 `t3: PRESS '3' FOR SITE COLLECTION ADMIN REPORT.
@@ -195,8 +218,8 @@ function spoSiteMap {
     reportCreate -reportPath "$($setupReportPath)\$($reportName)" -reportData $results
 
     Disconnect-PnPOnline
-    Write-Host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; Write-Host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
-    Write-Host "Report Saved: " -ForegroundColor DarkYellow -nonewline; Write-Host "$($reportPath)\$($reportName)" -ForegroundColor White;
+    write-host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; write-host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
+    write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White;
 }
 
 # OPTION "2"
@@ -217,7 +240,7 @@ function spoScanPII {
     Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
     $getDocLibs = Get-PnPList | Where-Object { $_.BaseTemplate -eq 101 }
 
-    Write-Host "Searching: $($sitePath)" -ForegroundColor Green
+    write-host "Searching: $($sitePath)" -ForegroundColor Green
 
     foreach ($DocLib in $getDocLibs) {
         Get-PnPListItem -List $DocLib -Fields "FileRef", "File_x0020_Type", "FileLeafRef", "File_x0020_Size", "Created", "Modified" -PageSize 1000 | Where { $_["FileLeafRef"] -like "*.*" } | Foreach-Object {
@@ -225,7 +248,7 @@ function spoScanPII {
                 $wordSearch = "(?i)\b$($word.Word)\b"
 
                 if (($_["FileLeafRef"] -match $wordSearch)) {
-                    Write-Host "File found. " -ForegroundColor Red -nonewline; Write-Host "Under: '$($word.Word)' Path: $($_["FileRef"])" -ForegroundColor Yellow;
+                    write-host "File found. " -ForegroundColor Red -nonewline; write-host "Under: '$($word.Word)' Path: $($_["FileRef"])" -ForegroundColor Yellow;
 
                     $permissions = @()
                     $perm = Get-PnPProperty -ClientObject $_ -Property RoleAssignments       
@@ -237,7 +260,7 @@ function spoScanPII {
                     $permissions = $permissions | Out-String
 
                     if ($_ -eq $null) {
-                        Write-Host "Error: 'Unable to pull file information'."
+                        write-host "Error: 'Unable to pull file information'."
                     } else {
                         $size = Format-FileSize($_["File_x0020_Size"])
                                
@@ -265,7 +288,7 @@ function spoScanPII {
             Connect-PnPOnline -Url $site.Url -UseWebLogin -WarningAction SilentlyContinue
             $getSubDocLibs = Get-PnPList | Where-Object {$_.BaseTemplate -eq 101}
 
-            Write-Host "Searching: $($site.Url)" -ForegroundColor Green
+            write-host "Searching: $($site.Url)" -ForegroundColor Green
 
             foreach ($subDocLib in $getSubDocLibs) {
                 Get-PnPListItem -List $subDocLib -Fields "FileRef", "File_x0020_Type", "FileLeafRef", "File_x0020_Size", "Created", "Modified" -PageSize 1000 | Where { $_["FileLeafRef"] -like "*.*" } | Foreach-Object {
@@ -273,7 +296,7 @@ function spoScanPII {
                         $wordSearch = "(?i)\b$($word.Word)\b"
 
                         if (($_["FileLeafRef"] -match $wordSearch)) {
-                            Write-Host "File found. " -ForegroundColor Red -nonewline; Write-Host "Under: '$($word.Word)' Path: $($_["FileRef"])" -ForegroundColor Yellow;
+                            write-host "File found. " -ForegroundColor Red -nonewline; write-host "Under: '$($word.Word)' Path: $($_["FileRef"])" -ForegroundColor Yellow;
 
                             $permissions = @()
                             $perm = Get-PnPProperty -ClientObject $_ -Property RoleAssignments       
@@ -285,7 +308,7 @@ function spoScanPII {
                             $permissions = $permissions | Out-String
 
                             if ($_ -eq $null) {
-                                Write-Host "Error: 'Unable to pull file information'."
+                                write-host "Error: 'Unable to pull file information'."
                             } else {
                                 $size = Format-FileSize($_["File_x0020_Size"])
            
@@ -309,8 +332,8 @@ function spoScanPII {
     }
 
     Disconnect-PnPOnline
-    Write-Host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; Write-Host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
-    Write-Host "Report Saved: " -ForegroundColor DarkYellow -nonewline; Write-Host "$($reportPath)\$($reportName)" -ForegroundColor White;
+    write-host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; write-host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
+    write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White;
 }
 
 # OPTION "3"
@@ -337,8 +360,8 @@ function spoGetSiteCollectionAdmins {
     }
 
     Disconnect-PnPOnline
-    Write-Host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; Write-Host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
-    Write-Host "Report Saved: " -ForegroundColor DarkYellow -nonewline; Write-Host "$($reportPath)\$($reportName)" -ForegroundColor White;
+    write-host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; write-host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
+    write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White;
 }
 
 # OPTION "4"
@@ -359,8 +382,8 @@ function spoAddSiteCollectionAdmin {
     reportCreate -reportPath "$($setupReportPath)\$($reportName)" -reportData $results
 
     Disconnect-PnPOnline
-    Write-Host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; Write-Host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
-    Write-Host "Report Saved: " -ForegroundColor DarkYellow -nonewline; Write-Host "$($reportPath)\$($reportName)" -ForegroundColor White;
+    write-host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; write-host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
+    write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White;
 }
 
 # OPTION "5"
@@ -377,9 +400,9 @@ function spoDeleteSiteCollectionAdmin {
     Get-PnPSiteCollectionAdmin | foreach-object { $getAdmins += $_ }
 
     do {
-        Write-Host "`nPLEASE SELECT AN ADMIN`n"
+        write-host "`nPLEASE SELECT AN ADMIN`n"
         foreach ($admin in $getAdmins) {
-            Write-Host "`t$($getAdmins.IndexOf($admin)+1): PRESS $($getAdmins.IndexOf($admin)+1) for $($admin.Title)"
+            write-host "`t$($getAdmins.IndexOf($admin)+1): PRESS $($getAdmins.IndexOf($admin)+1) for $($admin.Title)"
         }
         $adminChoice = Read-Host "PLEASE MAKE A SELECTION"
     } while (-not($getAdmins[$adminChoice-1]))
@@ -392,8 +415,8 @@ function spoDeleteSiteCollectionAdmin {
     reportCreate -reportPath "$($setupReportPath)\$($reportName)" -reportData $results
 
     Disconnect-PnPOnline
-    Write-Host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; Write-Host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
-    Write-Host "Report Saved: " -ForegroundColor DarkYellow -nonewline; Write-Host "$($reportPath)\$($reportName)" -ForegroundColor White;
+    write-host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; write-host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
+    write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White;
 }
 
 # OPTION "6"
@@ -423,14 +446,14 @@ function spoGetSiteCollectionGroups {
     }
 
     Disconnect-PnPOnline
-    Write-Host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; Write-Host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
-    Write-Host "Report Saved: " -ForegroundColor DarkYellow -nonewline; Write-Host "$($reportPath)\$($reportName)" -ForegroundColor White;
+    write-host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; write-host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
+    write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White;
 }
 #endregion
 
 #region USER TOOLS FUNCTIONS
 function showUserTools {   
-    Write-Host "`nUSER TOOLS -- SELECT AN OPTION`n
+    write-host "`nUSER TOOLS -- SELECT AN OPTION`n
 `t1: PRESS '1' FOR USER DELETION.
 `t2: PRESS '2' FOR ALL ASSIGNED USER GROUP DELETION.
 `tE: PRESS 'E' TO EXIT BACK TO THE MAIN MENU.`n"
@@ -448,7 +471,7 @@ function spoDeleteUser {
     Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
     $userInformation = Get-PnPUser | ? Email -eq $userEmail | ForEach-Object { 
         Remove-PnPUser -Identity $_.Title -Force
-        Write-Host "User Deleted: $($_.Title)" -ForegroundColor Yellow
+        write-host "User Deleted: $($_.Title)" -ForegroundColor Yellow
 
         $results = New-Object PSObject -Property @{
             UserDeleted = $_.Title
@@ -458,8 +481,8 @@ function spoDeleteUser {
     }
 
     Disconnect-PnPOnline
-    Write-Host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; Write-Host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
-    Write-Host "Report Saved: " -ForegroundColor DarkYellow -nonewline; Write-Host "$($reportPath)\$($reportName)" -ForegroundColor White;
+    write-host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; write-host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
+    write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White;
 }
 
 # OPTION "2"
@@ -474,7 +497,7 @@ function spoDeleteUserGroups {
     Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
     $userInformation = Get-PnPUser | ? Email -eq $userEmail | ForEach-Object { $_.Title }
     $userGroups = Get-PnPUser | ? Email -eq $userEmail | Select -ExpandProperty Groups | Where { ($_.Title -notmatch "Limited Access*") -and ($_.Title -notmatch "SharingLinks*") } | ForEach-Object { 
-        Write-Host "Name: $userInformation | Group Removed: " -ForegroundColor Yellow -NoNewline; Write-Host $($_.Title) -ForegroundColor Cyan
+        write-host "Name: $userInformation | Group Removed: " -ForegroundColor Yellow -NoNewline; write-host $($_.Title) -ForegroundColor Cyan
 
         Remove-PnPGroupMember -LoginName $userEmail -Identity $_.Title 
 
@@ -486,14 +509,14 @@ function spoDeleteUserGroups {
     }
 
     Disconnect-PnPOnline
-    Write-Host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; Write-Host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
-    Write-Host "Report Saved: " -ForegroundColor DarkYellow -nonewline; Write-Host "$($reportPath)\$($reportName)" -ForegroundColor White;
+    write-host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; write-host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
+    write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White;
 }
 #endregion
 
 #region LIST TOOLS FUNCTIONS
 function showListTools {   
-    Write-Host "`nCUSTOM LIST TOOLS -- SELECT AN OPTION`n
+    write-host "`nCUSTOM LIST TOOLS -- SELECT AN OPTION`n
 `t1: PRESS '1' SHOW LIST IN BROWSER.
 `t2: PRESS '2' HIDE LIST FROM BROWSER.
 `tE: PRESS 'E' TO EXIT BACK TO THE MAIN MENU.`n"
@@ -514,9 +537,9 @@ function spoShowList {
 
     if ($listsGet.count) {
         do {
-            Write-Host "`nPLEASE SELECT A LIST`n"
+            write-host "`nPLEASE SELECT A LIST`n"
             foreach ($list in $listsGet) {
-                Write-Host "`t$($listsGet.IndexOf($list)+1): PRESS $($listsGet.IndexOf($list)+1) for $($list.Title)"
+                write-host "`t$($listsGet.IndexOf($list)+1): PRESS $($listsGet.IndexOf($list)+1) for $($list.Title)"
             }
             $listChoice = Read-Host "`nPLEASE MAKE A SELECTION"
         } while (-not($listsGet[$listChoice-1]))
@@ -529,10 +552,10 @@ function spoShowList {
         reportCreate -reportPath "$($setupReportPath)\$($reportName)" -reportData $results
 
         Disconnect-PnPOnline
-        Write-Host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; Write-Host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
-        Write-Host "Report Saved: " -ForegroundColor DarkYellow -nonewline; Write-Host "$($reportPath)\$($reportName)" -ForegroundColor White;
+        write-host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; write-host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
+        write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White;
     } else {
-        Write-Host "`nNO LISTS ARE HIDDEN." -ForegroundColor Red
+        write-host "`nNO LISTS ARE HIDDEN." -ForegroundColor Red
     }
 }
 
@@ -551,9 +574,9 @@ function spoHideList {
 
     if ($listsGet.count) {
         do {
-            Write-Host "`nPLEASE SELECT A LIST`n"
+            write-host "`nPLEASE SELECT A LIST`n"
             foreach ($list in $listsGet) {
-                Write-Host "`t$($listsGet.IndexOf($list)+1): PRESS $($listsGet.IndexOf($list)+1) for $($list.Title)"
+                write-host "`t$($listsGet.IndexOf($list)+1): PRESS $($listsGet.IndexOf($list)+1) for $($list.Title)"
             }
             $listChoice = Read-Host "`nPLEASE MAKE A SELECTION"
         } while (-not($listsGet[$listChoice-1]))
@@ -566,17 +589,17 @@ function spoHideList {
         reportCreate -reportPath "$($setupReportPath)\$($reportName)" -reportData $results
 
         Disconnect-PnPOnline
-        Write-Host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; Write-Host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
-        Write-Host "Report Saved: " -ForegroundColor DarkYellow -nonewline; Write-Host "$($reportPath)\$($reportName)" -ForegroundColor White;
+        write-host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; write-host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
+        write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White;
     } else {
-        Write-Host "`nNO LISTS ARE HIDDEN." -ForegroundColor Red
+        write-host "`nNO LISTS ARE HIDDEN." -ForegroundColor Red
     }
 }
 #endregion
 
 #region CUSTOM LIST TOOLS FUNCTIONS
 function showCustomListTools {   
-    Write-Host "`nCUSTOM LIST TOOLS -- SELECT AN OPTION`n
+    write-host "`nCUSTOM LIST TOOLS -- SELECT AN OPTION`n
 `t1: PRESS '1' DELETE ALL LIST ITEMS.
 `tE: PRESS 'E' TO EXIT BACK TO THE MAIN MENU.`n"
 }
@@ -595,9 +618,9 @@ function spoDeleteAllListItems {
     Get-PnPList | Where-Object { $_.Hidden -eq $false -and $_.BaseTemplate -eq 100 } | ForEach-Object { $listsGet += ($_) }
 
     do {
-        Write-Host "`nPLEASE SELECT A LIST`n"
+        write-host "`nPLEASE SELECT A LIST`n"
         foreach ($list in $listsGet) {
-            Write-Host "`t$($listsGet.IndexOf($list)+1): PRESS $($listsGet.IndexOf($list)+1) for $($list.Title)"
+            write-host "`t$($listsGet.IndexOf($list)+1): PRESS $($listsGet.IndexOf($list)+1) for $($list.Title)"
         }
         $listChoice = Read-Host "`nPLEASE MAKE A SELECTION"
     } while (-not($listsGet[$listChoice-1]))
@@ -616,14 +639,14 @@ function spoDeleteAllListItems {
     Invoke-PnPBatch -Batch $Batch
 
     Disconnect-PnPOnline
-    Write-Host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; Write-Host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
-    Write-Host "Report Saved: " -ForegroundColor DarkYellow -nonewline; Write-Host "$($reportPath)\$($reportName)" -ForegroundColor White;
+    write-host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; write-host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
+    write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White;
 }
 #endregion
 
 #region DOCUMENT TOOLS FUNCTIONS
 function showDocumentTools {   
-    Write-Host "`nDOCUMENT TOOLS -- SELECT AN OPTION`n
+    write-host "`nDOCUMENT TOOLS -- SELECT AN OPTION`n
 `t1: PRESS '1' TRANSFER FOLDER TO DOCUMENT LIBRARY
 `tE: PRESS 'E' TO EXIT BACK TO THE MAIN MENU.`n"
 }
@@ -647,9 +670,9 @@ function spoUploadDocumentItems {
         Get-PnPList | Where-Object { $_.Hidden -eq $false -and $_.BaseTemplate -eq 101 -and $_.Title -ne "SiteCollectionDocuments" -and $_.Title -ne "Style Library" -and $_.Title -ne "FormServerTemplates" -and $_.Title -ne "Form Templates" } | foreach-object { $getDocumentLibraries += $_ }
 
         do {
-            Write-Host "`nPLEASE SELECT A DOCUMENT LIBRARY`n"
+            write-host "`nPLEASE SELECT A DOCUMENT LIBRARY`n"
             foreach ($documentLibrary in $getDocumentLibraries) {
-                Write-Host "`t$($getDocumentLibraries.IndexOf($documentLibrary)+1): PRESS $($getDocumentLibraries.IndexOf($documentLibrary)+1) for $($documentLibrary.Title)"
+                write-host "`t$($getDocumentLibraries.IndexOf($documentLibrary)+1): PRESS $($getDocumentLibraries.IndexOf($documentLibrary)+1) for $($documentLibrary.Title)"
             }
             $documentLibraryChoice = Read-Host "`nPLEASE MAKE A SELECTION"
         } while (-not($getDocumentLibraries[$documentLibraryChoice-1]))
@@ -661,11 +684,11 @@ function spoUploadDocumentItems {
             Get-PnPFolderItem -FolderSiteRelativeUrl $selectedLibraryURLFolder -ItemType Folder | Where { $_.Name -ne "Forms" } | foreach-object { $selectedSubFolders += $_ }
 
             if($selectedSubFolders.count) {
-                Write-Host "`nPLEASE SELECT A FOLDER TO COPY TO`n"
+                write-host "`nPLEASE SELECT A FOLDER TO COPY TO`n"
                 foreach ($child in $selectedSubFolders) {
-                    Write-Host "$($selectedSubFolders.IndexOf($child)+1): PRESS $($selectedSubFolders.IndexOf($child)+1) for $($child.Name)"
+                    write-host "$($selectedSubFolders.IndexOf($child)+1): PRESS $($selectedSubFolders.IndexOf($child)+1) for $($child.Name)"
                 }
-                Write-Host "S: PRESS S to Select Current Folder"
+                write-host "S: PRESS S to Select Current Folder"
                 $folderChoice = Read-Host "`nPLEASE MAKE A SELECTION"
             } else {
                 $folderChoice = "S"
@@ -728,10 +751,10 @@ function spoUploadDocumentItems {
         }
 
         Disconnect-PnPOnline
-        Write-Host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; Write-Host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
-        Write-Host "Report Saved: " -ForegroundColor DarkYellow -nonewline; Write-Host "$($reportPath)\$($reportName)" -ForegroundColor White;
+        write-host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; write-host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
+        write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White;
     } else {
-        Write-Host "`nPATH SUPPLIED WAS NOT A FOLDER! PLEASE CHECK YOUR LOCAL DIRECTORY PATH AND TRY AGAIN!" -ForegroundColor Red
+        write-host "`nPATH SUPPLIED WAS NOT A FOLDER! PLEASE CHECK YOUR LOCAL DIRECTORY PATH AND TRY AGAIN!" -ForegroundColor Red
     }
 }
 #endregion
