@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 # SPOA
-A PnP PowerShell Tool used to assist with SharePoint Online Adminstive Actions.
+A PnP PowerShell Tool used to assist with SharePoint Online Admin Actions.
 
 ## Install PnP PowerShell
 The script will automatically run this for you and check for updates.
