@@ -30,7 +30,7 @@ The script will automatically run this for you and check for updates.
 
 2.	Run the following command: Install-Module -Name PnP.PowerShell -Scope CurrentUser
 
-3.	When prompted: "NuGet provider is required to continue PowerShell Get requires NuGet provider version '2.8.5.201' or newer to interact with NuGet-based repositories. The NuGet provider must be available in 'C:\Program Files\PackageManagement\ProviderAssemblies' or 'C:\Users\EDIPI\AppData\Local\PackageManagement\ProviderAssemblies'. You can also install the NuGet provider by running 'Install-PackageProvider –Name NuGet –Minimum Version 2.8.5.201 -Force'. Do you want PowerShell Get to install and import the NuGet provider now?
+3.	When prompted: "NuGet provider is required to continue PowerShell Get requires NuGet provider version '2.8.5.201' or newer to interact with NuGet-based repositories. The NuGet provider must be available in 'C:\Program Files\PackageManagement\ProviderAssemblies' or 'EXAMPLE LOCATION'. You can also install the NuGet provider by running 'Install-PackageProvider –Name NuGet –Minimum Version 2.8.5.201 -Force'. Do you want PowerShell Get to install and import the NuGet provider now?
 
     [Y] Yes [N] No [S] Suspend [?] Help (default is "Y"):" 
 
