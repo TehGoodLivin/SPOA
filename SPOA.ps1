@@ -45,12 +45,16 @@ function reportCreate {
 
 #region SETUP FUNCTIONS
 function showSetup {
-    param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$SetupPath,
+    param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$configFilePath,
+          [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$currentVersion,
+          [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$SetupPath,
           [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$ReportPath,
           [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$DirtyWordsPath,
           [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$DirtyWordsFilePath)
 
     Clear-Host
+
+    $config = (New-Object System.Net.WebClient).DownloadString($configFilePath) | ConvertFrom-Json
     
     $pnpIsInstalled = Get-InstalledModule -Name PnP.PowerShell -ErrorAction silentlycontinue
     if($pnpIsInstalled.count -eq 0) {
@@ -72,13 +76,22 @@ function showSetup {
             }
         }
     }
-    
+
     #FOLDER AND FILES SETUP
     if (-Not (test-path $SetupPath)) { New-Item -Path $SetupPath -ItemType Directory | out-null }
     if (-Not (test-path $ReportPath)) { New-Item -Path $ReportPath -ItemType Directory | out-null }
     if (-Not (test-path $DirtyWordsPath)) {New-Item -Path $DirtyWordsPath -ItemType Directory | out-null }
-    if (-Not (test-path $DirtyWordsFilePath)) { $wordDefaultDirtySearchSet = @("\d{3}-\d{3}-\d{4}","\d{3}-\d{2}-\d{4}","MyFitness","CUI","UPMR","SURF","PA","2583","SF86","SF 86","FOUO","GTC","medical","AF469","AF 469","469","Visitor Request","VisitorRequest","Visitor","eQIP","EPR","910","AF910","AF 910","911","AF911","AF 911","OPR","eval","feedback","loc","loa","lor","alpha roster","alpha","roster","recall","SSN","SSAN","AF1466","1466","AF 1466","AF1566","AF 1566","1566","SGLV","SF182","182","SF 182","allocation notice","credit","allocation","2583","AF 1466","AF1466","1466","AF1566","AF 1566","1566","AF469","AF 469","469","AF 422","AF422","422","AF910","AF 910","910","AF911","AF 911","911","AF77","AF 77","77","AF475","AF 475","475","AF707","AF 707","707","AF709","AF 709","709","AF 724","AF724","724","AF912","AF 912","912","AF 931","AF931","931","AF932","AF 932","932","AF948","AF 948","948","AF 3538","AF3538","3538","AF3538E","AF 3538E","AF2096","AF 2096","2096","AF 2098","AF2098","AF 2098","AF 3538","AF3538","3538","1466","1566","469","422","travel","SF128","SF 128","128","SF 86","SF86","86","SGLV","SGLI","DD214","DD 214","214","DD 149","DD149","149") | Select-Object @{Name='Word';Expression={$_}} | export-csv $DirtyWordsFilePath -NoType }
+    if (-Not (test-path $DirtyWordsFilePath)) { $config.DirtyWords | Select-Object @{Name='Word';Expression={$_}} | export-csv $DirtyWordsFilePath -NoType }
     if (test-path $DirtyWordsPath) { $global:wordDirtySearch = Import-Csv $DirtyWordsFilePath }
+
+    #CHECK SPOA UPDATE FILE
+    if ($currentVersion -ne $config.version) {
+        write-host $config.version
+        write-host "###########################################################" -ForegroundColor Green
+        write-host "#                 NEW SPOA UPDATE AVAIABLE                #" -ForegroundColor Green
+        write-host "#        https://github.com/TheRealGoodLivin/SPOA/        #" -ForegroundColor Green
+        write-host "###########################################################`n" -ForegroundColor Green
+    }
 }
 #endregion
 
@@ -794,12 +807,15 @@ function spoUploadDocumentItems {
 #region MAIN
 $global:wordDirtySearch = $null;
 
+$configFilePath = "https://raw.githubusercontent.com/TheRealGoodLivin/SPOA/main/CONFIG.json"
+$currentVersion = "1.0.1"
+
 $setupPath = "C:\users\$env:USERNAME\Documents\SOPA"
 $setupReportPath = $setupPath + "\Reports"
 $setupDirtyWordsPath = $setupPath + "\DirtyWords"
 $setupDirtyWordsFilePath = $setupDirtyWordsPath + "\DirtyWords.csv"
 
-showSetup -SetupPath $setupPath -ReportPath $setupReportPath -DirtyWordsPath $setupDirtyWordsPath -DirtyWordsFilePath $setupDirtyWordsFilePath
+showSetup -configFilePath $configFilePath -currentVersion $currentVersion -SetupPath $setupPath -ReportPath $setupReportPath -DirtyWordsPath $setupDirtyWordsPath -DirtyWordsFilePath $setupDirtyWordsFilePath
 do {
     showMenu
     $menuMain = read-host "PLEASE MAKE A SELECTION"
