@@ -810,7 +810,7 @@ function spoUploadDocumentItems {
 $global:wordDirtySearch = $null;
 
 $configFilePath = "https://raw.githubusercontent.com/TheRealGoodLivin/SPOA/main/CONFIG.json"
-$currentVersion = "1.0.1"
+$currentVersion = "1.0.2"
 
 $setupPath = "C:\users\$env:USERNAME\Documents\SOPA"
 $setupReportPath = $setupPath + "\Reports"
