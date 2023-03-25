@@ -1,6 +1,6 @@
 {
   "script": "SPOA",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "DirtyWords": [
     "\\d{3}-\\d{3}-\\d{4}",
     "\\d{3}-\\d{2}-\\d{4}",
