@@ -47,10 +47,10 @@ function reportCreate {
 function showSetup {
     param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$configFilePath,
           [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$currentVersion,
-          [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$SetupPath,
-          [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$ReportPath,
-          [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$DirtyWordsPath,
-          [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$DirtyWordsFilePath)
+          [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$setupPath,
+          [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportPath,
+          [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$dirtyWordsPath,
+          [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$dirtyWordsFilePath)
 
     Clear-Host
 
@@ -78,11 +78,13 @@ function showSetup {
     }
 
     #FOLDER AND FILES SETUP
-    if (-Not (test-path $SetupPath)) { New-Item -Path $SetupPath -ItemType Directory | out-null }
-    if (-Not (test-path $ReportPath)) { New-Item -Path $ReportPath -ItemType Directory | out-null }
-    if (-Not (test-path $DirtyWordsPath)) {New-Item -Path $DirtyWordsPath -ItemType Directory | out-null }
-    if (-Not (test-path $DirtyWordsFilePath)) { $config.DirtyWords | Select-Object @{Name='Word';Expression={$_}} | export-csv $DirtyWordsFilePath -NoType }
-    if (test-path $DirtyWordsPath) { $global:wordDirtySearch = Import-Csv $DirtyWordsFilePath }
+    if (-Not (test-path $setupPath)) { New-Item -Path $setupPath -ItemType Directory | out-null }
+    if (-Not (test-path $reportPath)) { New-Item -Path $reportPath -ItemType Directory | out-null }
+    if (-Not (test-path $dirtyWordsPath)) {New-Item -Path $dirtyWordsPath -ItemType Directory | out-null }
+    if (-Not (test-path $dirtyWordsFilePath)) { $config.DirtyWords | Select-Object @{Name='Word';Expression={$_}} | export-csv $dirtyWordsFilePath -NoType }
+    if (test-path $dirtyWordsPath) { $global:wordDirtySearch = Import-Csv $dirtyWordsFilePath }
+
+    Clear-Host
 
     #CHECK SPOA UPDATE FILE
     if ($currentVersion -ne $config.version) {
