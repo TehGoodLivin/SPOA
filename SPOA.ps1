@@ -790,8 +790,7 @@ do {
                 showUserTools
                 $menuSub = read-host "PLEASE MAKE A SELECTION"
                 switch ($menuSub) {
-                    "1" { spoDeleteUser -reportPath $setupReportPath -reportName "DELETEUSER_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
-                    }
+                    "1" { spoDeleteUser -reportPath $setupReportPath -reportName "DELETEUSER_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv" }
                     "2" { spoDeleteUserGroups -reportPath $setupReportPath -reportName "DELETEUSERGROUPS_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv" }
                 }
             } until ($menuSub -eq "e")
@@ -804,10 +803,8 @@ do {
                 showListTools
                 $menuSub = read-host "PLEASE MAKE A SELECTION"
                 switch ($menuSub) {
-                    "1" { spoShowList -reportPath $setupReportPath -reportName "SHOWLIST_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
-                    }
-                    "2" { spoHideList -reportPath $setupReportPath -reportName "HIDELIST_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
-                    }
+                    "1" { spoShowList -reportPath $setupReportPath -reportName "SHOWLIST_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv" }
+                    "2" { spoHideList -reportPath $setupReportPath -reportName "HIDELIST_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv" }
                 }
             } until ($menuSub -eq "e")
         }
