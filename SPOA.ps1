@@ -122,8 +122,7 @@ function showMenu {
 `t1: PRESS '1' FOR SITE TOOLS.
 `t2: PRESS '2' FOR USER TOOLS.
 `t3: PRESS '3' FOR LIST TOOLS.
-`t4: PRESS '4' FOR CUSTOM LIST TOOLS.
-`t5: PRESS '5' FOR DOCUMENT TOOLS.
+`t4: PRESS '4' FOR DOCUMENT TOOLS.
 `tPRESS 'S' FOR SETTINGS OR 'Q' TO QUIT`n"
 }
 
@@ -516,6 +515,8 @@ function showListTools {
     write-host "`nCUSTOM LIST TOOLS -- SELECT AN OPTION`n
 `t1: PRESS '1' SHOW LIST IN BROWSER.
 `t2: PRESS '2' HIDE LIST FROM BROWSER.
+`t3: PRESS '3' REMOVE LIST ITEM UNIQUE PERMISSIONS.
+`t4: PRESS '4' DELETE ALL LIST ITEM.
 `tE: PRESS 'E' TO EXIT BACK TO THE MAIN MENU.`n"
 }
 
@@ -592,16 +593,52 @@ function spoHideList {
         write-host "`nNO LISTS ARE HIDDEN." -ForegroundColor Red
     }
 }
-#endregion
 
-#region CUSTOM LIST TOOLS FUNCTIONS
-function showCustomListTools {   
-    write-host "`nCUSTOM LIST TOOLS -- SELECT AN OPTION`n
-`t1: PRESS '1' DELETE ALL LIST ITEMS.
-`tE: PRESS 'E' TO EXIT BACK TO THE MAIN MENU.`n"
+# OPTION "3"
+function spoRemoveUnqiqueItemsPermissions {
+    param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportPath,
+          [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
+
+    $sitePath = read-host "`nENTER SITE URL THAT LIST RESIDES ON"
+    $results = @()
+    
+    Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
+
+    $listsGet = @()
+    Get-PnPList | where-object { $_.Hidden -eq $false } | foreach-object { $listsGet += $_ }
+
+    if ($listsGet.count) {
+        do {
+            write-host "`nPLEASE SELECT A LIST`n"
+            foreach ($list in $listsGet) {
+                write-host "`t$($listsGet.IndexOf($list)+1): PRESS $($listsGet.IndexOf($list)+1) for $($list.Title)"
+            }
+            $listChoice = read-host "`nPLEASE MAKE A SELECTION"
+        } while (-not($listsGet[$listChoice-1]))
+
+        $listItems = Get-PnPListItem -List $listsGet[$listChoice-1].Title -PageSize 500
+        ForEach($item in $listItems) {
+            $checkItemPermissions = Get-PnPProperty -ClientObject $item -Property "HasUniqueRoleAssignments"
+            If($checkItemPermissions) {
+                Set-PnPListItemPermission -List $listsGet[$listChoice-1].Title -Identity $item.Id -InheritPermissions
+
+                $results = New-Object PSObject -Property @{
+                    ListName = $listsGet[$listChoice-1].Title
+                    ItemID = $item.Id
+                }
+                reportCreate -reportPath "$($setupReportPath)\$($reportName)" -reportData $results
+            }
+        }
+
+        Disconnect-PnPOnline
+        write-host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; write-host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
+        write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White;
+    } else {
+        write-host "`nNO LISTS ARE HIDDEN." -ForegroundColor Red
+    }
 }
 
-# OPTION "1"
+# OPTION "4"
 function spoDeleteAllListItems {
     param([Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportPath,
           [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$reportName)
@@ -612,7 +649,7 @@ function spoDeleteAllListItems {
     Connect-PnPOnline -Url $sitePath -UseWebLogin -WarningAction SilentlyContinue
     $listsGet = @()
 
-    Get-PnPList | where-object { $_.Hidden -eq $false -and $_.BaseTemplate -eq 100 } | foreach-object { $listsGet += ($_) }
+    Get-PnPList | where-object { $_.Hidden -eq $false } | foreach-object { $listsGet += ($_) }
 
     do {
         write-host "`nPLEASE SELECT A LIST`n"
@@ -627,7 +664,7 @@ function spoDeleteAllListItems {
     ForEach($item in $listItems) {    
          Remove-PnPListItem -List $listsGet[$listChoice-1].Title -Identity $item.Id -Recycle -Batch $Batch
 
-         $results = New-Object PSObject -Property @{
+        $results = New-Object PSObject -Property @{
             ListName = $listsGet[$listChoice-1].Title
             ItemDeletedID = $item.Id
         }
@@ -805,25 +842,15 @@ do {
                 switch ($menuSub) {
                     "1" { spoShowList -reportPath $setupReportPath -reportName "SHOWLIST_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv" }
                     "2" { spoHideList -reportPath $setupReportPath -reportName "HIDELIST_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv" }
-                }
-            } until ($menuSub -eq "e")
-        }
-        #endregion
-
-        #region CUSTOM LIST TOOLS
-        "4" {
-            do {
-                showCustomListTools
-                $menuSub = read-host "PLEASE MAKE A SELECTION"
-                switch ($menuSub) {
-                    "1" { spoDeleteAllListItems -reportPath $setupReportPath -reportName "DELETEDLISTITEMS_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv" }
+                    "3" { spoRemoveUnqiqueItemsPermissions -reportPath $setupReportPath -reportName "LISTITEMUNIQUEPERMREMOVAL_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv" }
+                    "4" { spoDeleteAllListItems -reportPath $setupReportPath -reportName "DELETEDLISTITEMS_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv" }
                 }
             } until ($menuSub -eq "e")
         }
         #endregion
 
         #region DOCUMENT TOOLS
-        "5" {
+        "4" {
             do {
                 showDocumentTools
                 $menuSub = read-host "PLEASE MAKE A SELECTION"
