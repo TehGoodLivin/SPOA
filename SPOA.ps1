@@ -88,7 +88,6 @@ function showSetup {
 
     #CHECK SPOA UPDATE FILE
     if ($currentVersion -ne $config.version) {
-        write-host $config.version
         write-host "###########################################################" -ForegroundColor Green
         write-host "#                 NEW SPOA UPDATE AVAIABLE                #" -ForegroundColor Green
         write-host "#        https://github.com/TheRealGoodLivin/SPOA/        #" -ForegroundColor Green
