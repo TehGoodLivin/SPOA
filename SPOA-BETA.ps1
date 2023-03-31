@@ -49,7 +49,16 @@ function showSetup {
 
     Clear-Host
 
-    $config = (New-Object System.Net.WebClient).DownloadString($configFilePath) | ConvertFrom-Json
+    try {
+        $config = (New-Object System.Net.WebClient).DownloadString($configFilePath) | ConvertFrom-Json
+        $configWords = $config.DirtyWords
+        $configVersion = $config.version
+    } catch {
+        Write-host "`nUNABLE TO DOWNLOAD CONFIG" -ForegroundColor Red
+        $configWords = @("\d{3}-\d{3}-\d{4}","\d{3}-\d{2}-\d{4}","MyFitness","CUI","UPMR","SURF","PA","2583","SF86","SF 86","FOUO","GTC","medical","AF469","AF 469","469","Visitor Request","VisitorRequest","Visitor","eQIP","EPR","910","AF910","AF 910","911","AF911","AF 911","OPR","eval","feedback","loc","loa","lor","alpha roster","alpha","roster","recall","SSN","SSAN","AF1466","1466","AF 1466","AF1566","AF 1566","1566","SGLV","SF182","182","SF 182","allocation notice","credit","allocation","2583","AF 1466","AF1466","1466","AF1566","AF 1566","1566","AF469","AF 469","469","AF 422","AF422","422","AF910","AF 910","910","AF911","AF 911","911","AF77","AF 77","77","AF475","AF 475","475","AF707","AF 707","707","AF709","AF 709","709","AF 724","AF724","724","AF912","AF 912","912","AF 931","AF931","931","AF932","AF 932","932","AF948","AF 948","948","AF 3538","AF3538","3538","AF3538E","AF 3538E","AF2096","AF 2096","2096","AF 2098","AF2098","AF 2098","AF 3538","AF3538","3538","1466","1566","469","422","travel","SF128","SF 128","128","SF 86","SF86","86","SGLV","SGLI","DD214","DD 214","214","DD 149","DD149","149")
+        $configVersion = $currentVersion
+    }
+
     
     $pnpIsInstalled = Get-InstalledModule -Name PnP.PowerShell -ErrorAction silentlycontinue
     if($pnpIsInstalled.count -eq 0) {
@@ -76,13 +85,13 @@ function showSetup {
     if (-Not (test-path $setupPath)) { New-Item -Path $setupPath -ItemType Directory | out-null }
     if (-Not (test-path $reportPath)) { New-Item -Path $reportPath -ItemType Directory | out-null }
     if (-Not (test-path $dirtyWordsPath)) {New-Item -Path $dirtyWordsPath -ItemType Directory | out-null }
-    if (-Not (test-path $dirtyWordsFilePath)) { $config.DirtyWords | Select-Object @{Name='Word';Expression={$_}} | export-csv $dirtyWordsFilePath -NoType }
+    if (-Not (test-path $dirtyWordsFilePath)) { $configWords | Select-Object @{Name='Word';Expression={$_}} | export-csv $dirtyWordsFilePath -NoType }
     if (test-path $dirtyWordsPath) { $global:wordDirtySearch = Import-Csv $dirtyWordsFilePath }
 
     Clear-Host
 
     #CHECK SPOA UPDATE FILE
-    if ($currentVersion -ne $config.version) {
+    if ($currentVersion -ne $configVersion) {
         write-host "###########################################################" -ForegroundColor Green
         write-host "#                 NEW SPOA UPDATE AVAIABLE                #" -ForegroundColor Green
         write-host "#        https://github.com/TheRealGoodLivin/SPOA/        #" -ForegroundColor Green
@@ -132,7 +141,7 @@ function showMain {
 
 function showMenu {
     write-host "`nMAIN MENU -- SELECT A CATEGORY`n
-`t1: PRESS '1' FOR SITE TOOLS.
+`t1: PRESS '1' FOR COLLECTION TOOLS.
 `t2: PRESS '2' FOR GROUP TOOLS.
 `t3: PRESS '3' FOR USER TOOLS.
 `t4: PRESS '4' FOR LIST TOOLS.
@@ -231,7 +240,7 @@ function spoSiteMap {
         reportCreate -reportPath "$($setupReportPath)\$($reportName)" -reportData $results
 
         write-host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; write-host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
-        write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White;
+        if (test-path "$($reportPath)\$($reportName)") { write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White; }
     } Catch {
         Write-host "`nAN ERROR HAS OCCURRED" -ForegroundColor Red
     }
@@ -383,7 +392,7 @@ function spoSiteGetCollectionAdmins {
         }
 
         write-host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; write-host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
-        write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White;
+        if (test-path "$($reportPath)\$($reportName)") { write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White; }
     } Catch {
         Write-host "`nAN ERROR HAS OCCURRED" -ForegroundColor Red
     }
@@ -419,7 +428,7 @@ function spoSiteGetCollectionGroups {
         }
 
         write-host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; write-host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
-        write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White;
+        if (test-path "$($reportPath)\$($reportName)") { write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White; }
     } Catch {
         Write-host "`nAN ERROR HAS OCCURRED" -ForegroundColor Red
     }
@@ -460,7 +469,7 @@ function spoSiteAddCollectionAdmin {
         }
 
         write-host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; write-host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
-        write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White;
+        if (test-path "$($reportPath)\$($reportName)") { write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White; }
     } Catch {
         Write-host "`nAN ERROR HAS OCCURRED" -ForegroundColor Red
     }
@@ -497,7 +506,7 @@ function spoSiteDeleteCollectionAdmin {
         reportCreate -reportPath "$($setupReportPath)\$($reportName)" -reportData $results
 
         write-host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; write-host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
-        write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White;
+        if (test-path "$($reportPath)\$($reportName)") { write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White; }
     } Catch {
         Write-host "`nAN ERROR HAS OCCURRED" -ForegroundColor Red
     }
@@ -535,7 +544,7 @@ function spoGroupAddEveryone {
         reportCreate -reportPath "$($setupReportPath)\$($reportName)" -reportData $results
 
         write-host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; write-host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
-        write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White;
+        if (test-path "$($reportPath)\$($reportName)") { write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White; }
     } Catch {
         Write-host "`nAN ERROR HAS OCCURRED" -ForegroundColor Red
     }
@@ -590,7 +599,7 @@ function spoUserDelete {
         }
 
         write-host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; write-host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
-        write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White;
+        if (test-path "$($reportPath)\$($reportName)") { write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White; }
     } Catch {
         Write-host "`nAN ERROR HAS OCCURRED" -ForegroundColor Red
     }
@@ -638,7 +647,7 @@ function spoUserDeleteGroups {
         }
 
         write-host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; write-host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
-        write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White;
+        if (test-path "$($reportPath)\$($reportName)") { write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White; }
     } Catch {
         Write-host "`nAN ERROR HAS OCCURRED" -ForegroundColor Red
     }
@@ -688,7 +697,7 @@ function spoListShow {
             reportCreate -reportPath "$($setupReportPath)\$($reportName)" -reportData $results
 
             write-host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; write-host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
-            write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White;
+            if (test-path "$($reportPath)\$($reportName)") { write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White; }
         } else {
             write-host "`nNO LISTS FOUND." -ForegroundColor Red
         }
@@ -729,7 +738,7 @@ function spoListHide {
             reportCreate -reportPath "$($setupReportPath)\$($reportName)" -reportData $results
 
             write-host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; write-host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
-            write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White;
+            if (test-path "$($reportPath)\$($reportName)") { write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White; }
         } else {
             write-host "`nNO LISTS FOUND." -ForegroundColor Red
         }
@@ -777,7 +786,7 @@ function spoListDeleteAllUniquePermissions {
             }
 
             write-host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; write-host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
-            write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White;
+            if (test-path "$($reportPath)\$($reportName)") { write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White; }
         } else {
             write-host "`nNO LISTS FOUND." -ForegroundColor Red
         }
@@ -825,7 +834,7 @@ function spoListDeleteAllItems {
             Invoke-PnPBatch -Batch $Batch
 
             write-host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; write-host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
-            write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White;
+            if (test-path "$($reportPath)\$($reportName)") { write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White; } else { write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "NO INFORMATION GENERATED" -ForegroundColor White; }
         } else {
             write-host "`nNO LISTS FOUND." -ForegroundColor Red
         }
@@ -946,7 +955,7 @@ function spoDocumentFolderUpload {
             }
 
             write-host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; write-host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
-            write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White;
+            if (test-path "$($reportPath)\$($reportName)") { write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White; }
         } Catch {
             Write-host "`nAN ERROR HAS OCCURRED" -ForegroundColor Red
         }
@@ -999,21 +1008,21 @@ function spoDocumentSharedLinks {
                                         User = $user.Title
                                         Access = $role.RoleDefinitionBindings.Name
                                     }
+
+                                    reportCreate -reportPath "$($setupReportPath)\$($reportName)" -reportData $results
                                 }
                             }
                         }
                     }
-                
-                    reportCreate -reportPath "$($setupReportPath)\$($reportName)" -reportData $results
                 }
             }
 
             write-host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; write-host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
-            write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White;
+            if (test-path "$($reportPath)\$($reportName)") { write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White; }
         } else {
             write-host "`nNO LISTS FOUND." -ForegroundColor Red
         }
-    } Catch {
+     } Catch {
         Write-host "`nAN ERROR HAS OCCURRED" -ForegroundColor Red
     }
     Disconnect-PnPOnline
@@ -1062,7 +1071,7 @@ function spoDocumentDeleteAllSharedLinks {
 
             Disconnect-PnPOnline
             write-host "`nCompleted: " -ForegroundColor DarkYellow -nonewline; write-host "$(get-date -format yyyy/MM/dd-HH:mm:ss)" -ForegroundColor White;
-            write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White;
+            if (test-path "$($reportPath)\$($reportName)") { write-host "Report Saved: " -ForegroundColor DarkYellow -nonewline; write-host "$($reportPath)\$($reportName)" -ForegroundColor White; }
         } else {
             write-host "`nNO LISTS FOUND." -ForegroundColor Red
         }
@@ -1214,7 +1223,7 @@ do {
             do {
                 showDocumentTools
                 $menuSub = read-host "PLEASE MAKE A SELECTION"
-                switch ($menuSub) {
+                switch -wildcard ($menuSub) {
                     "1*" { 
                         if ($menuSub.Contains("?")) { write-host "`nPROVIDES CAPABILITY TO UPLOAD FOLDER INTO A DOCUMENT LIBRARY." -ForegroundColor Green } else {
                             spoDocumentFolderUpload -reportPath $setupReportPath -reportName "spoDocumentFolderUpload_$((Get-Date).ToString("yyyyMMdd_HHmmss")).csv"
