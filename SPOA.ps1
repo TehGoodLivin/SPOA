@@ -77,22 +77,24 @@ function showSetup {
     if($pnpIsInstalled.count -eq 0) {
         $Confirm = read-host "`nWOULD YOU LIKE TO INSTALL SHAREPOINT PNP MODULE? [Y] Yes [N] No"
         if($Confirm -match "[yY]") {
-            install-module -Name PnP.PowerShell -scope currentuser
+            #install-module -Name PnP.PowerShell -scope currentuser
+            install-module -Name PnP.PowerShell -RequiredVersion 1.12.0 -Force -scope currentuser #accoding to PnP: https://github.com/pnp/powershell
         } else {
             write-host "`nSHAREPOINT PNP MODULE IS NEED TO PERFORM THE FEATURES IN THIS SCRIPT." -ForegroundColor red
             break
         }
-    } else {
-        $pnpCurrentModule = ((get-module -Name PnP.PowerShell -listavailable).Version | sort-object -Descending | select-object -First 1).ToString()
-        $pnpNewestModule = (find-module -Name PnP.PowerShell).Version.ToString()
-
-        if ([System.Version]$pnpCurrentModule -lt [System.Version]$pnpNewestModule) {
-            $Confirm = read-host "`nTHERE IS AN UPDATE TO SHAREPOINT PNP MODULE. WOULD YOU LIKE TO INSTALL IT? [Y] Yes [N] No"
-            if($Confirm -match "[yY]") {
-                update-module -Name PnP.PowerShell
-            }
-        }
-    }
+    } 
+    #else {
+    #    $pnpCurrentModule = ((get-module -Name PnP.PowerShell -listavailable).Version | sort-object -Descending | select-object -First 1).ToString()
+    #    $pnpNewestModule = (find-module -Name PnP.PowerShell).Version.ToString()
+    #
+    #    if ([System.Version]$pnpCurrentModule -lt [System.Version]$pnpNewestModule) {
+    #        $Confirm = read-host "`nTHERE IS AN UPDATE TO SHAREPOINT PNP MODULE. WOULD YOU LIKE TO INSTALL IT? [Y] Yes [N] No"
+    #        if($Confirm -match "[yY]") {
+    #            update-module -Name PnP.PowerShell
+    #        }
+    #    }
+    #}
 
     #FOLDER AND FILES SETUP
     if (-Not (test-path $setupPath)) { New-Item -Path $setupPath -ItemType Directory | out-null }
@@ -104,12 +106,12 @@ function showSetup {
     Clear-Host
 
     #CHECK SPOA UPDATE FILE
-    if ($currentVersion -ne $config.version) {
-        write-host "###########################################################" -ForegroundColor Green
-        write-host "#                 NEW SPOA UPDATE AVAIABLE                #" -ForegroundColor Green
-        write-host "#        https://github.com/TheRealGoodLivin/SPOA/        #" -ForegroundColor Green
-        write-host "###########################################################`n" -ForegroundColor Green
-    }
+    #if ($currentVersion -ne $config.version) {
+    #    write-host "###########################################################" -ForegroundColor Green
+    #    write-host "#                 NEW SPOA UPDATE AVAIABLE                #" -ForegroundColor Green
+    #    write-host "#        https://github.com/TheRealGoodLivin/SPOA/        #" -ForegroundColor Green
+    #    write-host "###########################################################`n" -ForegroundColor Green
+    #}
 
     showMain
 }
