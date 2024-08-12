@@ -24,7 +24,7 @@ $global:wordDirtySearch = $null;
 $configFilePath = "https://raw.githubusercontent.com/TheRealGoodLivin/SPOA/main/CONFIG.json"
 $currentVersion = "1.1"
 
-$setupPath = "C:\users\$env:USERNAME\Documents\SOPA"
+$setupPath = if (Test-Path -Path $env:OneDrive) { $env:OneDrive + "\Documents\SOPA" } else { $env:UserProfile + "\Documents\SOPA" }
 $setupReportPath = $setupPath + "\Reports"
 $setupDirtyWordsPath = $setupPath + "\DirtyWords"
 $setupDirtyWordsFilePath = $setupDirtyWordsPath + "\DirtyWords.csv"
